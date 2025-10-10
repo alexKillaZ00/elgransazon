@@ -47,15 +47,27 @@ public class EmployeeService {
     }
 
     /**
-     * Find employee by username (nombre)
+     * Find employee by username
      * 
-     * @param nombre Employee's first name used as username
+     * @param username Employee's username
      * @return Optional containing the employee if found
      */
     @Transactional(readOnly = true)
-    public Optional<Employee> findByNombre(String nombre) {
-        log.debug("Finding employee by nombre: {}", nombre);
-        return employeeRepository.findByNombre(nombre);
+    public Optional<Employee> findByUsername(String username) {
+        log.debug("Finding employee by username: {}", username);
+        return employeeRepository.findByUsername(username);
+    }
+
+    /**
+     * Find employee by email
+     * 
+     * @param email Employee's email
+     * @return Optional containing the employee if found
+     */
+    @Transactional(readOnly = true)
+    public Optional<Employee> findByEmail(String email) {
+        log.debug("Finding employee by email: {}", email);
+        return employeeRepository.findByEmail(email);
     }
 
     /**
@@ -68,11 +80,16 @@ public class EmployeeService {
      */
     @Transactional
     public Employee create(Employee employee) {
-        log.info("Creating new employee: {}", employee.getNombre());
+        log.info("Creating new employee: {}", employee.getUsername());
 
-        if (employeeRepository.existsByNombre(employee.getNombre())) {
-            log.error("Employee with nombre {} already exists", employee.getNombre());
-            throw new IllegalArgumentException("Employee with username '" + employee.getNombre() + "' already exists");
+        if (employeeRepository.existsByUsername(employee.getUsername())) {
+            log.error("Employee with username {} already exists", employee.getUsername());
+            throw new IllegalArgumentException("Employee with username '" + employee.getUsername() + "' already exists");
+        }
+
+        if (employeeRepository.existsByEmail(employee.getEmail())) {
+            log.error("Employee with email {} already exists", employee.getEmail());
+            throw new IllegalArgumentException("Employee with email '" + employee.getEmail() + "' already exists");
         }
 
         // Encode password before saving
@@ -103,8 +120,24 @@ public class EmployeeService {
                     return new IllegalArgumentException("Employee not found with id: " + id);
                 });
 
+        // Check if username is being changed and if it's already taken
+        if (!employee.getUsername().equals(employeeDetails.getUsername()) &&
+            employeeRepository.existsByUsername(employeeDetails.getUsername())) {
+            log.error("Username {} already exists", employeeDetails.getUsername());
+            throw new IllegalArgumentException("Username '" + employeeDetails.getUsername() + "' already exists");
+        }
+
+        // Check if email is being changed and if it's already taken
+        if (!employee.getEmail().equals(employeeDetails.getEmail()) &&
+            employeeRepository.existsByEmail(employeeDetails.getEmail())) {
+            log.error("Email {} already exists", employeeDetails.getEmail());
+            throw new IllegalArgumentException("Email '" + employeeDetails.getEmail() + "' already exists");
+        }
+
+        employee.setUsername(employeeDetails.getUsername());
         employee.setNombre(employeeDetails.getNombre());
         employee.setApellido(employeeDetails.getApellido());
+        employee.setEmail(employeeDetails.getEmail());
         employee.setEnabled(employeeDetails.getEnabled());
 
         // Only update password if it's provided and different

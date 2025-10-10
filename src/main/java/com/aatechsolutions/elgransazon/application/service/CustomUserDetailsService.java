@@ -33,7 +33,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         log.info("=== Starting authentication for user: {} ===", username);
         
         try {
-            Employee employee = employeeRepository.findByNombre(username)
+            Employee employee = employeeRepository.findByUsername(username)
                     .orElseThrow(() -> {
                         log.error("Employee not found with username: {}", username);
                         return new UsernameNotFoundException("Employee not found with username: " + username);
@@ -62,7 +62,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
             log.info("Building UserDetails...");
             UserDetails userDetails = User.builder()
-                    .username(employee.getNombre())
+                    .username(employee.getUsername())
                     .password(employee.getContrasenia())
                     .disabled(!employee.getEnabled())
                     .authorities(getAuthorities(employee))
@@ -89,7 +89,7 @@ public class CustomUserDetailsService implements UserDetailsService {
      */
     private Collection<? extends GrantedAuthority> getAuthorities(Employee employee) {
         if (employee.getRoles().isEmpty()) {
-            log.warn("Employee {} has no roles assigned, granting default EMPLOYEE role", employee.getNombre());
+            log.warn("Employee {} has no roles assigned, granting default EMPLOYEE role", employee.getUsername());
             return Collections.singletonList(new SimpleGrantedAuthority("ROLE_EMPLOYEE"));
         }
 

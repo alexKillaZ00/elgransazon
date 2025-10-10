@@ -26,11 +26,17 @@ public class Employee implements Serializable {
     @Column(name = "id_empleado")
     private Long idEmpleado;
 
+    @Column(name = "username", nullable = false, unique = true, length = 50)
+    private String username;
+
     @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
 
     @Column(name = "apellido", nullable = false, length = 100)
     private String apellido;
+
+    @Column(name = "email", nullable = false, unique = true, length = 150)
+    private String email;
 
     @Column(name = "contrasenia", nullable = false)
     private String contrasenia;

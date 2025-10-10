@@ -13,18 +13,34 @@ import java.util.Optional;
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     /**
-     * Find an employee by their name (used as username for login)
+     * Find an employee by their username (used for login)
      * 
-     * @param nombre the employee's first name
+     * @param username the employee's username
      * @return Optional containing the employee if found
      */
-    Optional<Employee> findByNombre(String nombre);
+    Optional<Employee> findByUsername(String username);
 
     /**
-     * Check if an employee exists by name
+     * Find an employee by their email
      * 
-     * @param nombre the employee's first name
+     * @param email the employee's email
+     * @return Optional containing the employee if found
+     */
+    Optional<Employee> findByEmail(String email);
+
+    /**
+     * Check if an employee exists by username
+     * 
+     * @param username the employee's username
      * @return true if employee exists, false otherwise
      */
-    boolean existsByNombre(String nombre);
+    boolean existsByUsername(String username);
+
+    /**
+     * Check if an employee exists by email
+     * 
+     * @param email the employee's email
+     * @return true if employee exists, false otherwise
+     */
+    boolean existsByEmail(String email);
 }
