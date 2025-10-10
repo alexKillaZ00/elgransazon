@@ -246,401 +246,267 @@
                     </p>
                   </div>
                 </div>
-                <form action="/logout" method="post" style="display: inline; width: 100%;">
-                  <button
-                    type="submit"
-                    class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium text-xs sm:text-sm transition-colors shadow-md hover:shadow-lg"
-                  >
-                    <span class="material-symbols-outlined text-lg">logout</span>
-                    <span>Cerrar Sesión</span>
-                  </button>
-                </form>
+                <button
+                  class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium text-xs sm:text-sm transition-colors shadow-md hover:shadow-lg"
+                >
+                  <span class="material-symbols-outlined text-lg">logout</span>
+                  <span>Cerrar Sesión</span>
+                </button>
               </div>
             </div>
           </nav>
         </div>
       </aside>
 
-      <!-- MAIN CONTENT -->
-      <main class="flex-1 overflow-y-auto h-screen">
-        <div class="p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
-          <!-- HEADER -->
-          <div
-            class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 sm:mb-8"
-          >
-            <div>
-              <h2
-                class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-1"
-              >
-                Gestión de Inventario
-              </h2>
-              <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                Control y seguimiento de stock de ingredientes
-              </p>
+    <!-- MAIN CONTENT -->
+<main class="flex-1 overflow-y-auto h-screen">
+  <div class="p-4 sm:p-6 lg:p-8 pt-20 lg:pt-8">
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 sm:mb-8">
+      <div>
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-1">
+          Gestión de Inventario
+        </h2>
+        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+          Control y seguimiento de stock de ingredientes
+        </p>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <button
+          class="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white font-semibold hover:shadow-lg hover:shadow-primary/30 transition-all shadow-md text-sm sm:text-base">
+          <span class="material-symbols-outlined text-lg">add</span>
+          Añadir Ingrediente
+        </button>
+        <button
+          class="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-md text-sm sm:text-base">
+          <span class="material-symbols-outlined text-lg">inventory_2</span>
+          Registrar Entrada
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <!-- SECCIÓN TABLA -->
+      <div class="lg:col-span-3 space-y-6">
+        <!-- FILTROS -->
+        <div class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg">
+          <div class="flex flex-col md:flex-row items-stretch md:items-center gap-4">
+            <div class="relative flex-1">
+              <span
+                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+              <input
+                class="w-full h-12 pl-10 pr-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-gray-400 text-sm"
+                placeholder="Buscar ingredientes..." type="text" />
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-2">
+              <select
+                class="h-12 px-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none text-sm">
+                <option>Categoría</option>
+                <option>Verduras</option>
+                <option>Frutas</option>
+                <option>Lácteos</option>
+              </select>
+              <select
+                class="h-12 px-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none text-sm">
+                <option>Proveedor</option>
+                <option>Proveedor A</option>
+                <option>Proveedor B</option>
+              </select>
               <button
-                class="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-primary to-primary-dark text-white font-semibold hover:shadow-lg hover:shadow-primary/30 transition-all shadow-md text-sm sm:text-base"
-              >
-                <span class="material-symbols-outlined text-lg">add</span>
-                Añadir Ingrediente
+                class="h-12 w-12 flex items-center justify-center rounded-xl bg-primary/20 dark:bg-primary/30 text-primary hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors">
+                <span class="material-symbols-outlined">filter_list</span>
               </button>
-              <button
-                class="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-gray-900 dark:text-white font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-md text-sm sm:text-base"
-              >
-                <span class="material-symbols-outlined text-lg"
-                  >inventory_2</span
-                >
-                Registrar Entrada
-              </button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="lg:col-span-3 space-y-6">
-              <!-- FILTROS -->
-              <div
-                class="bg-white dark:bg-gray-900 p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg"
-              >
-                <div
-                  class="flex flex-col md:flex-row items-stretch md:items-center gap-4"
-                >
-                  <div class="relative flex-1">
-                    <span
-                      class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                      >search</span
-                    >
-                    <input
-                      class="w-full h-12 pl-10 pr-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-gray-400 text-sm"
-                      placeholder="Buscar ingredientes..."
-                      type="text"
-                    />
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <select
-                      class="h-12 px-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none text-sm"
-                    >
-                      <option>Categoría</option>
-                      <option>Verduras</option>
-                      <option>Frutas</option>
-                      <option>Lácteos</option>
-                    </select>
-                    <select
-                      class="h-12 px-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:outline-none text-sm"
-                    >
-                      <option>Proveedor</option>
-                      <option>Proveedor A</option>
-                      <option>Proveedor B</option>
-                    </select>
-                    <button
-                      class="h-12 w-12 flex items-center justify-center rounded-xl bg-primary/20 dark:bg-primary/30 text-primary hover:bg-primary/30 dark:hover:bg-primary/40 transition-colors"
-                    >
-                      <span class="material-symbols-outlined">filter_list</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <!-- TABLA -->
-              <div
-                class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg overflow-hidden"
-              >
-                <div class="overflow-x-auto">
-                  <table class="w-full text-left">
-                    <thead>
-                      <tr class="bg-gray-50 dark:bg-gray-800">
-                        <th
-                          class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400"
-                        >
-                          Ingrediente
-                        </th>
-                        <th
-                          class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 text-right"
-                        >
-                          Stock Actual
-                        </th>
-                        <th
-                          class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 text-center"
-                        >
-                          Nivel de Stock
-                        </th>
-                        <th
-                          class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 text-center"
-                        >
-                          Acciones
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody
-                      class="divide-y divide-gray-200 dark:divide-gray-700"
-                    >
-                      <tr
-                        class="hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                      >
-                        <td
-                          class="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                        >
-                          Tomates
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white"
-                        >
-                          50 Kg
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div
-                            class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"
-                          >
-                            <div
-                              class="bg-green-500 h-2.5 rounded-full"
-                              style="width: 85%"
-                            ></div>
-                          </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >edit</span
-                            >
-                          </button>
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >delete</span
-                            >
-                          </button>
-                        </td>
-                      </tr>
-                      <tr
-                        class="hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                      >
-                        <td
-                          class="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                        >
-                          Cebollas
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white"
-                        >
-                          25 Kg
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div
-                            class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"
-                          >
-                            <div
-                              class="bg-yellow-500 h-2.5 rounded-full"
-                              style="width: 50%"
-                            ></div>
-                          </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >edit</span
-                            >
-                          </button>
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >delete</span
-                            >
-                          </button>
-                        </td>
-                      </tr>
-                      <tr
-                        class="hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                      >
-                        <td
-                          class="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                        >
-                          Lechuga
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white"
-                        >
-                          10 Pz
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div
-                            class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"
-                          >
-                            <div
-                              class="bg-red-500 h-2.5 rounded-full"
-                              style="width: 20%"
-                            ></div>
-                          </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >edit</span
-                            >
-                          </button>
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >delete</span
-                            >
-                          </button>
-                        </td>
-                      </tr>
-                      <tr
-                        class="hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                      >
-                        <td
-                          class="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                        >
-                          Aceite de Oliva
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white"
-                        >
-                          15 L
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div
-                            class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"
-                          >
-                            <div
-                              class="bg-yellow-500 h-2.5 rounded-full"
-                              style="width: 60%"
-                            ></div>
-                          </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >edit</span
-                            >
-                          </button>
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >delete</span
-                            >
-                          </button>
-                        </td>
-                      </tr>
-                      <tr
-                        class="hover:bg-gray-50 dark:hover:bg-gray-800 transition"
-                      >
-                        <td
-                          class="px-6 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-white"
-                        >
-                          Sal
-                        </td>
-                        <td
-                          class="px-6 py-4 whitespace-nowrap text-right font-medium text-gray-900 dark:text-white"
-                        >
-                          5 Kg
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <div
-                            class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"
-                          >
-                            <div
-                              class="bg-red-500 h-2.5 rounded-full"
-                              style="width: 15%"
-                            ></div>
-                          </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >edit</span
-                            >
-                          </button>
-                          <button
-                            class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <span
-                              class="material-symbols-outlined text-gray-600 dark:text-gray-400"
-                              >delete</span
-                            >
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <!-- SIDEBAR DE ALERTAS -->
-            <div class="lg:col-span-1">
-              <div
-                class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg p-6 sticky top-6"
-              >
-                <div class="flex items-center gap-3 mb-6">
-                  <div
-                    class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center"
-                  >
-                    <span class="material-symbols-outlined text-red-500 text-xl"
-                      >warning</span
-                    >
-                  </div>
-                  <h3 class="text-lg font-bold">Alertas de Stock Bajo</h3>
-</div>
-<div class="space-y-4">
-<div class="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
-<div>
-<p class="font-semibold text-red-500">Lechuga</p>
-<p class="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Quedan 10 Pz</p>
-</div>
-<button class="flex items-center justify-center gap-1 h-8 px-3 rounded-md bg-primary text-background-dark text-xs font-bold">
-                                        Pedir
-                                    </button>
-</div>
-<div class="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
-<div>
-<p class="font-semibold text-red-500">Sal</p>
-<p class="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Quedan 5 Kg</p>
-</div>
-<button class="flex items-center justify-center gap-1 h-8 px-3 rounded-md bg-primary text-background-dark text-xs font-bold">
-                                        Pedir
-                                    </button>
-</div>
-<div class="flex items-center justify-between p-3 rounded-lg bg-yellow-500/10">
-<div>
-<p class="font-semibold text-yellow-600 dark:text-yellow-500">Cebollas</p>
-<p class="text-sm text-muted-foreground-light dark:text-muted-foreground-dark">Quedan 25 Kg</p>
-</div>
-<button class="flex items-center justify-center gap-1 h-8 px-3 rounded-md bg-primary text-background-dark text-xs font-bold">
-                                        Pedir
-                                    </button>
-</div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
-      </main>
+
+        <!-- TABLA -->
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="bg-gray-50 dark:bg-gray-800">
+                  <th
+                    class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                    Ingrediente
+                  </th>
+                  <th
+                    class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 text-right">
+                    Stock Entrada
+                  </th>
+                  <th
+                    class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 text-right">
+                    Stock Actual
+                  </th>
+                  <th
+                    class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 text-center">
+                    Nivel de Stock
+                  </th>
+                  <th
+                    class="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400 text-center">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- Fila: Tomates -->
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Tomates</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">60 Kg</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">50 Kg</td>
+                  <td class="px-6 py-4">
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                      <div class="bg-green-500 h-2.5 rounded-full" style="width: 85%"></div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">edit</span>
+                    </button>
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">delete</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Fila: Cebollas -->
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Cebollas</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">50 Kg</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">25 Kg</td>
+                  <td class="px-6 py-4">
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                      <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 50%"></div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">edit</span>
+                    </button>
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">delete</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Fila: Lechuga -->
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Lechuga</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">50 Pz</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">10 Pz</td>
+                  <td class="px-6 py-4">
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                      <div class="bg-red-500 h-2.5 rounded-full" style="width: 20%"></div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">edit</span>
+                    </button>
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">delete</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Fila: Aceite -->
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Aceite de Oliva</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">25 L</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">15 L</td>
+                  <td class="px-6 py-4">
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                      <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 60%"></div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">edit</span>
+                    </button>
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">delete</span>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Fila: Sal -->
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">Sal</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">30 Kg</td>
+                  <td class="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">5 Kg</td>
+                  <td class="px-6 py-4">
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                      <div class="bg-red-500 h-2.5 rounded-full" style="width: 15%"></div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-center">
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">edit</span>
+                    </button>
+                    <button class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                      <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR DE ALERTAS -->
+      <div class="lg:col-span-1">
+        <div
+          class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg p-6 sticky top-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center">
+              <span class="material-symbols-outlined text-red-500 text-xl">warning</span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">Alertas de Stock Bajo</h3>
+          </div>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
+              <div>
+                <p class="font-semibold text-red-500">Lechuga</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Quedan 10 Pz</p>
+              </div>
+              <button
+                class="h-8 px-3 rounded-md bg-primary text-white text-xs font-bold hover:bg-primary-dark transition">
+                Pedir
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-lg bg-red-500/10">
+              <div>
+                <p class="font-semibold text-red-500">Sal</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Quedan 5 Kg</p>
+              </div>
+              <button
+                class="h-8 px-3 rounded-md bg-primary text-white text-xs font-bold hover:bg-primary-dark transition">
+                Pedir
+              </button>
+            </div>
+
+            <div class="flex items-center justify-between p-3 rounded-lg bg-yellow-500/10">
+              <div>
+                <p class="font-semibold text-yellow-600 dark:text-yellow-500">Cebollas</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Quedan 25 Kg</p>
+              </div>
+              <button
+                class="h-8 px-3 rounded-md bg-primary text-white text-xs font-bold hover:bg-primary-dark transition">
+                Pedir
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+</main>
+
 
     <!-- JAVASCRIPT -->
     <script>
