@@ -33,4 +33,34 @@ public class AdminController {
         
         return "admin/dashboard";
     }
+     @GetMapping("/reservations")
+    public String reservations(Authentication authentication, Model model) {
+        String username = authentication.getName();
+        log.info("Admin {} accessed reservations", username);
+
+        model.addAttribute("username", username);
+        model.addAttribute("role", "Administrator");
+
+        return "admin/reservations";
+    }
+      @GetMapping("/tables")
+    public String tables(Authentication authentication, Model model) {
+        String username = authentication.getName();
+        log.info("Admin {} accessed tables", username);
+
+        model.addAttribute("username", username);
+        model.addAttribute("role", "Administrator");
+
+        return "admin/tables";
+    }
+    @GetMapping("/inventory")
+    public String inventory(Authentication authentication, Model model) {
+        String username = authentication.getName();
+        log.info("Admin {} accessed inventory", username);
+
+        model.addAttribute("username", username);
+        model.addAttribute("role", "Administrator");
+
+        return "admin/inventory";
+    }
 }
