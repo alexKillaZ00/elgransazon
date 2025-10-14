@@ -298,6 +298,45 @@
       <span class="text-red-800 dark:text-red-200" th:text="${errorMessage}"></span>
     </div>
 
+    <!-- STATS -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-2xl">inventory_2</span>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Total Ingredientes</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" th:text="${totalCount}">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-green-500 text-2xl">check_circle</span>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Activos</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" th:text="${activeCount}">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-red-500 text-2xl">cancel</span>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Inactivos</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white" th:text="${inactiveCount}">0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- CONTENEDOR PRINCIPAL -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- SECCIÓN TABLA -->
@@ -558,6 +597,25 @@
 
     <!-- JAVASCRIPT -->
     <script>
+      // Auto-hide alerts after 5 seconds
+      document.addEventListener('DOMContentLoaded', function() {
+        // Buscar alertas por su contenido de clase CSS
+        const alerts = document.querySelectorAll('.bg-green-100, .bg-red-100');
+        
+        alerts.forEach(alert => {
+          if (alert && alert.classList.contains('mb-6')) {
+            setTimeout(() => {
+              alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+              alert.style.opacity = '0';
+              alert.style.transform = 'translateY(-20px)';
+              setTimeout(() => {
+                alert.remove();
+              }, 500);
+            }, 2000);
+          }
+        });
+      });
+
       const menuToggle = document.getElementById("menuToggle");
       const sidebar = document.getElementById("sidebar");
       const menuOverlay = document.getElementById("menuOverlay");

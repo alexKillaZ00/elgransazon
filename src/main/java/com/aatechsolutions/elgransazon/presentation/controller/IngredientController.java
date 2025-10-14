@@ -56,6 +56,11 @@ public class IngredientController {
         // Get statistics for alerts
         long lowStockCount = ingredientService.countLowStock();
         long outOfStockCount = ingredientService.countOutOfStock();
+        
+        // Get general statistics
+        long activeCount = ingredientService.getActiveCount();
+        long inactiveCount = ingredientService.getInactiveCount();
+        long totalCount = activeCount + inactiveCount; // Total de ingredientes (activos + inactivos)
 
         // Get all categories for filter dropdown
         List<IngredientCategory> allCategories = categoryService.findAllActive();
@@ -69,6 +74,9 @@ public class IngredientController {
         model.addAttribute("supplierId", supplierId);
         model.addAttribute("sortBy", sortBy);
         model.addAttribute("active", activeFilter);
+        model.addAttribute("totalCount", totalCount);
+        model.addAttribute("activeCount", activeCount);
+        model.addAttribute("inactiveCount", inactiveCount);
         model.addAttribute("lowStockCount", lowStockCount);
         model.addAttribute("outOfStockCount", outOfStockCount);
         model.addAttribute("allCategories", allCategories);
