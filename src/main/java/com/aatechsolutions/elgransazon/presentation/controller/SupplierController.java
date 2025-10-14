@@ -1,59 +1,115 @@
 package com.aatechsolutions.elgransazon.presentation.controller;
 
+import com.aatechsolutions.elgransazon.application.service.IngredientCategoryService;
+import com.aatechsolutions.elgransazon.application.service.IngredientService;
 import com.aatechsolutions.elgransazon.application.service.SupplierService;
+import com.aatechsolutions.elgransazon.domain.entity.Ingredient;
+import com.aatechsolutions.elgransazon.domain.entity.IngredientCategory;
 import com.aatechsolutions.elgransazon.domain.entity.Supplier;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Controller for managing supplier operations
- * Only accessible by ADMIN role
+ * Controller for Supplier management
  */
 @Controller
 @RequestMapping("/admin/suppliers")
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 @Slf4j
 public class SupplierController {
 
     private final SupplierService supplierService;
+    private final IngredientCategoryService categoryService;
+    private final IngredientService ingredientService;
 
     /**
-     * Display list of all suppliers
+     * List all suppliers with optional filters
      */
     @GetMapping
     public String listSuppliers(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long ingredientId,
+            @RequestParam(required = false) Boolean active,
             Model model) {
-        
-        log.debug("Displaying suppliers list with search: {}, rating: {}", search, rating);
-        
+
+        log.info("Listing suppliers with filters - search: {}, rating: {}, categoryId: {}, ingredientId: {}, active: {}",
+                search, rating, categoryId, ingredientId, active);
+
+        // Default to showing only active suppliers if no filter is specified
+        Boolean activeFilter = (active != null) ? active : true;
+
         List<Supplier> suppliers;
-        
-        if (rating != null && rating >= 1 && rating <= 5) {
-            suppliers = supplierService.getSuppliersByRating(rating);
-        } else if (search != null && !search.trim().isEmpty()) {
-            suppliers = supplierService.searchSuppliers(search);
+        String filterMessage = null;
+
+        // Special case: Filter by ingredient (show suppliers for that ingredient's category)
+        if (ingredientId != null) {
+            try {
+                Ingredient ingredient = ingredientService.findById(ingredientId)
+                        .orElseThrow(() -> new IllegalArgumentException("Ingrediente no encontrado"));
+
+                if (ingredient.getCategory() == null) {
+                    model.addAttribute("errorMessage", "El ingrediente no tiene una categoría asignada");
+                    suppliers = Collections.emptyList();
+                } else {
+                    // Get suppliers for this ingredient's category
+                    suppliers = supplierService.findByCategoryId(ingredient.getCategory().getIdCategory());
+
+                    // Apply additional search filter if provided
+                    if (search != null && !search.trim().isEmpty()) {
+                        final String searchLower = search.toLowerCase();
+                        suppliers = suppliers.stream()
+                                .filter(s -> s.getName().toLowerCase().contains(searchLower) ||
+                                           (s.getContactPerson() != null && s.getContactPerson().toLowerCase().contains(searchLower)) ||
+                                           (s.getEmail() != null && s.getEmail().toLowerCase().contains(searchLower)))
+                                .toList();
+                    }
+
+                    filterMessage = "Mostrando proveedores que surten: " + ingredient.getName() +
+                                  " (Categoría: " + ingredient.getCategory().getName() + ")";
+                    model.addAttribute("ingredientName", ingredient.getName());
+                    model.addAttribute("categoryName", ingredient.getCategory().getName());
+                }
+            } catch (Exception e) {
+                log.error("Error filtering suppliers by ingredient: {}", e.getMessage());
+                model.addAttribute("errorMessage", "Error al filtrar proveedores: " + e.getMessage());
+                suppliers = Collections.emptyList();
+            }
         } else {
-            suppliers = supplierService.getAllSuppliers();
+            // Normal filtering
+            suppliers = supplierService.searchWithFilters(search, rating, categoryId, activeFilter);
         }
-        
+
+        // Get statistics
+        long activeCount = supplierService.getActiveCount();
+        long inactiveCount = supplierService.getInactiveCount();
+
+        // Get all categories for filter dropdown
+        List<IngredientCategory> allCategories = categoryService.findAllActive();
+
         model.addAttribute("suppliers", suppliers);
-        model.addAttribute("activeCount", supplierService.countActiveSuppliers());
-        model.addAttribute("inactiveCount", supplierService.countInactiveSuppliers());
         model.addAttribute("search", search);
         model.addAttribute("rating", rating);
-        
+        model.addAttribute("categoryId", categoryId);
+        model.addAttribute("ingredientId", ingredientId);
+        model.addAttribute("active", activeFilter);
+        model.addAttribute("activeCount", activeCount);
+        model.addAttribute("inactiveCount", inactiveCount);
+        model.addAttribute("allCategories", allCategories);
+        model.addAttribute("filterMessage", filterMessage);
+
         return "admin/suppliers/list";
     }
 
@@ -62,48 +118,53 @@ public class SupplierController {
      */
     @GetMapping("/new")
     public String showCreateForm(Model model) {
-        log.debug("Displaying create supplier form");
+        log.info("Showing supplier create form");
+        
         model.addAttribute("supplier", new Supplier());
         model.addAttribute("isEdit", false);
+        model.addAttribute("allCategories", categoryService.findAllActive());
+        
         return "admin/suppliers/form";
     }
 
     /**
-     * Process the creation of a new supplier
+     * Create a new supplier
      */
     @PostMapping
     public String createSupplier(
             @Valid @ModelAttribute("supplier") Supplier supplier,
-            BindingResult bindingResult,
-            RedirectAttributes redirectAttributes,
-            Model model) {
+            BindingResult result,
+            @RequestParam(required = false) List<Long> categoryIds,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
-        log.info("Processing supplier creation: {}", supplier.getName());
+        log.info("Creating supplier: {}", supplier.getName());
 
-        // Check for validation errors
-        if (bindingResult.hasErrors()) {
-            log.warn("Validation errors on supplier creation");
+        if (result.hasErrors()) {
+            log.error("Validation errors creating supplier");
             model.addAttribute("isEdit", false);
+            model.addAttribute("allCategories", categoryService.findAllActive());
             return "admin/suppliers/form";
         }
 
         try {
-            // Check if supplier name already exists
-            if (supplierService.supplierNameExists(supplier.getName())) {
-                bindingResult.rejectValue("name", "error.supplier", "Supplier name already exists");
-                model.addAttribute("isEdit", false);
-                return "admin/suppliers/form";
+            // Set categories
+            if (categoryIds != null && !categoryIds.isEmpty()) {
+                Set<IngredientCategory> categories = new HashSet<>();
+                for (Long categoryId : categoryIds) {
+                    categoryService.findById(categoryId).ifPresent(categories::add);
+                }
+                supplier.setCategories(categories);
             }
 
-            supplierService.createSupplier(supplier);
-            log.info("Supplier created successfully: {}", supplier.getName());
-            redirectAttributes.addFlashAttribute("successMessage", "Supplier created successfully!");
+            supplierService.create(supplier);
+            redirectAttributes.addFlashAttribute("successMessage", "Proveedor creado exitosamente");
             return "redirect:/admin/suppliers";
-
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             log.error("Error creating supplier: {}", e.getMessage());
-            model.addAttribute("errorMessage", "Error creating supplier: " + e.getMessage());
+            model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("isEdit", false);
+            model.addAttribute("allCategories", categoryService.findAllActive());
             return "admin/suppliers/form";
         }
     }
@@ -113,67 +174,81 @@ public class SupplierController {
      */
     @GetMapping("/{id}/edit")
     public String showEditForm(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        log.debug("Displaying edit form for supplier id: {}", id);
+        log.info("Showing supplier edit form for id: {}", id);
 
-        return supplierService.getSupplierById(id)
-                .map(supplier -> {
-                    model.addAttribute("supplier", supplier);
-                    model.addAttribute("isEdit", true);
-                    return "admin/suppliers/form";
-                })
-                .orElseGet(() -> {
-                    log.warn("Supplier not found with id: {}", id);
-                    redirectAttributes.addFlashAttribute("errorMessage", "Supplier not found");
-                    return "redirect:/admin/suppliers";
-                });
+        try {
+            Supplier supplier = supplierService.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado"));
+
+            model.addAttribute("supplier", supplier);
+            model.addAttribute("isEdit", true);
+            model.addAttribute("allCategories", categoryService.findAllActive());
+
+            return "admin/suppliers/form";
+        } catch (IllegalArgumentException e) {
+            log.error("Supplier not found with id: {}", id);
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/admin/suppliers";
+        }
     }
 
     /**
-     * Process the update of an existing supplier
+     * Update an existing supplier
      */
     @PostMapping("/{id}")
     public String updateSupplier(
             @PathVariable Long id,
             @Valid @ModelAttribute("supplier") Supplier supplier,
-            BindingResult bindingResult,
-            RedirectAttributes redirectAttributes,
-            Model model) {
+            BindingResult result,
+            @RequestParam(required = false) List<Long> categoryIds,
+            Model model,
+            RedirectAttributes redirectAttributes) {
 
-        log.info("Processing supplier update for id: {}", id);
+        log.info("Updating supplier with id: {}", id);
 
-        // Check for validation errors
-        if (bindingResult.hasErrors()) {
-            log.warn("Validation errors on supplier update");
+        if (result.hasErrors()) {
+            log.error("Validation errors updating supplier");
             model.addAttribute("isEdit", true);
+            model.addAttribute("allCategories", categoryService.findAllActive());
             return "admin/suppliers/form";
         }
 
         try {
-            supplierService.updateSupplier(id, supplier);
-            log.info("Supplier updated successfully: {}", id);
-            redirectAttributes.addFlashAttribute("successMessage", "Supplier updated successfully!");
-            return "redirect:/admin/suppliers";
+            // Set categories
+            if (categoryIds != null && !categoryIds.isEmpty()) {
+                Set<IngredientCategory> categories = new HashSet<>();
+                for (Long categoryId : categoryIds) {
+                    categoryService.findById(categoryId).ifPresent(categories::add);
+                }
+                supplier.setCategories(categories);
+            } else {
+                supplier.setCategories(new HashSet<>());
+            }
 
+            supplierService.update(id, supplier);
+            redirectAttributes.addFlashAttribute("successMessage", "Proveedor actualizado exitosamente");
+            return "redirect:/admin/suppliers";
         } catch (IllegalArgumentException e) {
             log.error("Error updating supplier: {}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("isEdit", true);
+            model.addAttribute("allCategories", categoryService.findAllActive());
             return "admin/suppliers/form";
         }
     }
 
     /**
-     * Soft delete a supplier (set active to false)
+     * Deactivate a supplier (soft delete)
      */
     @PostMapping("/{id}/delete")
     public String deleteSupplier(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        log.info("Processing supplier deletion for id: {}", id);
+        log.info("Deactivating supplier with id: {}", id);
 
         try {
-            supplierService.deleteSupplier(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Supplier deactivated successfully!");
+            supplierService.delete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Proveedor desactivado exitosamente");
         } catch (IllegalArgumentException e) {
-            log.error("Error deleting supplier: {}", e.getMessage());
+            log.error("Error deactivating supplier: {}", e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 
@@ -185,31 +260,13 @@ public class SupplierController {
      */
     @PostMapping("/{id}/activate")
     public String activateSupplier(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        log.info("Processing supplier activation for id: {}", id);
+        log.info("Activating supplier with id: {}", id);
 
         try {
-            supplierService.activateSupplier(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Supplier activated successfully!");
+            supplierService.activate(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Proveedor activado exitosamente");
         } catch (IllegalArgumentException e) {
             log.error("Error activating supplier: {}", e.getMessage());
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
-        }
-
-        return "redirect:/admin/suppliers";
-    }
-
-    /**
-     * Permanently delete a supplier (hard delete)
-     */
-    @PostMapping("/{id}/permanent-delete")
-    public String permanentlyDeleteSupplier(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        log.warn("Processing permanent deletion for supplier id: {}", id);
-
-        try {
-            supplierService.permanentlyDeleteSupplier(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Supplier permanently deleted!");
-        } catch (IllegalArgumentException e) {
-            log.error("Error permanently deleting supplier: {}", e.getMessage());
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
 

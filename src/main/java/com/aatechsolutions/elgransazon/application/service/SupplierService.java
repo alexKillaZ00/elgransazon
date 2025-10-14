@@ -1,115 +1,66 @@
 package com.aatechsolutions.elgransazon.application.service;
 
 import com.aatechsolutions.elgransazon.domain.entity.Supplier;
-
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Service interface for Supplier business logic
+ * Service interface for Supplier management
  */
 public interface SupplierService {
 
     /**
-     * Get all suppliers ordered by name
-     * @return List of all suppliers
+     * Find all suppliers ordered by name
      */
-    List<Supplier> getAllSuppliers();
+    List<Supplier> findAll();
 
     /**
-     * Get all active suppliers ordered by name
-     * @return List of active suppliers
+     * Find supplier by ID
      */
-    List<Supplier> getAllActiveSuppliers();
-
-    /**
-     * Get a supplier by its ID
-     * @param id the supplier ID
-     * @return Optional containing the supplier if found
-     */
-    Optional<Supplier> getSupplierById(Long id);
-
-    /**
-     * Get a supplier by its name
-     * @param name the supplier name
-     * @return Optional containing the supplier if found
-     */
-    Optional<Supplier> getSupplierByName(String name);
-
-    /**
-     * Search suppliers by term (name, contact person, email)
-     * @param searchTerm the search term
-     * @return List of matching suppliers
-     */
-    List<Supplier> searchSuppliers(String searchTerm);
-
-    /**
-     * Get suppliers by rating
-     * @param rating the rating (1-5)
-     * @return List of suppliers with the specified rating
-     */
-    List<Supplier> getSuppliersByRating(Integer rating);
-
-    /**
-     * Get top rated suppliers (4-5 stars)
-     * @return List of highly rated suppliers
-     */
-    List<Supplier> getTopRatedSuppliers();
+    Optional<Supplier> findById(Long id);
 
     /**
      * Create a new supplier
-     * @param supplier the supplier to create
-     * @return the created supplier
-     * @throws IllegalArgumentException if supplier name already exists
      */
-    Supplier createSupplier(Supplier supplier);
+    Supplier create(Supplier supplier);
 
     /**
      * Update an existing supplier
-     * @param id the ID of the supplier to update
-     * @param supplier the updated supplier data
-     * @return the updated supplier
-     * @throws IllegalArgumentException if supplier not found or name already exists
      */
-    Supplier updateSupplier(Long id, Supplier supplier);
+    Supplier update(Long id, Supplier supplier);
 
     /**
-     * Delete a supplier (soft delete by setting active to false)
-     * @param id the ID of the supplier to delete
-     * @throws IllegalArgumentException if supplier not found
+     * Soft delete (deactivate) a supplier
      */
-    void deleteSupplier(Long id);
-
-    /**
-     * Hard delete a supplier from database
-     * @param id the ID of the supplier to permanently delete
-     * @throws IllegalArgumentException if supplier not found
-     */
-    void permanentlyDeleteSupplier(Long id);
+    void delete(Long id);
 
     /**
      * Activate a supplier
-     * @param id the ID of the supplier to activate
-     * @throws IllegalArgumentException if supplier not found
      */
-    void activateSupplier(Long id);
+    void activate(Long id);
 
     /**
-     * Check if a supplier name already exists
-     * @param name the supplier name to check
-     * @return true if exists, false otherwise
+     * Search suppliers with filters
      */
-    boolean supplierNameExists(String name);
+    List<Supplier> searchWithFilters(String search, Integer rating, Long categoryId, Boolean active);
 
     /**
-     * Get count of active suppliers
-     * @return number of active suppliers
+     * Find suppliers by category ID
      */
-    long countActiveSuppliers();
+    List<Supplier> findByCategoryId(Long categoryId);
 
     /**
-     * Get count of inactive suppliers
-     * @return number of inactive suppliers
+     * Get active supplier count
      */
-    long countInactiveSuppliers();
+    long getActiveCount();
+
+    /**
+     * Get inactive supplier count
+     */
+    long getInactiveCount();
+
+    /**
+     * Find all active suppliers ordered by name
+     */
+    List<Supplier> findAllActive();
 }

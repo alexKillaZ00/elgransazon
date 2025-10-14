@@ -1,18 +1,17 @@
 package com.aatechsolutions.elgransazon.domain.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Supplier entity representing ingredient suppliers
- * Manages information about companies or individuals that provide ingredients
+ * Manages supplier information and their ingredient categories
  */
 @Entity
 @Table(name = "suppliers")
@@ -22,7 +21,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(of = {"idSupplier"})
-@ToString
+@ToString(exclude = {"categories", "createdBy"})
 public class Supplier implements Serializable {
 
     @Id
@@ -30,30 +29,30 @@ public class Supplier implements Serializable {
     @Column(name = "id_supplier")
     private Long idSupplier;
 
-    @NotBlank(message = "Supplier name is required")
-    @Size(min = 2, max = 150, message = "Supplier name must be between 2 and 150 characters")
+    @NotBlank(message = "El nombre del proveedor es requerido")
+    @Size(min = 2, max = 150, message = "El nombre debe tener entre 2 y 150 caracteres")
     @Column(name = "name", nullable = false, length = 150)
     private String name;
 
-    @Size(max = 100, message = "Contact person name cannot exceed 100 characters")
+    @Size(max = 100, message = "El nombre del contacto no puede exceder 100 caracteres")
     @Column(name = "contact_person", length = 100)
     private String contactPerson;
 
-    @Pattern(regexp = "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$", 
-             message = "Invalid phone number format")
+    @Pattern(regexp = "^[+]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[(]?[0-9]{1,4}[)]?[-\\s\\.]?[0-9]{1,9}$",
+            message = "Formato de teléfono inválido")
     @Column(name = "phone", length = 20)
     private String phone;
 
-    @Email(message = "Invalid email format")
-    @Size(max = 150, message = "Email cannot exceed 150 characters")
+    @Email(message = "Formato de email inválido")
+    @Size(max = 150, message = "El email no puede exceder 150 caracteres")
     @Column(name = "email", length = 150)
     private String email;
 
-    @Size(max = 300, message = "Address cannot exceed 300 characters")
+    @Size(max = 300, message = "La dirección no puede exceder 300 caracteres")
     @Column(name = "address", length = 300)
     private String address;
 
-    @Size(max = 500, message = "Notes cannot exceed 500 characters")
+    @Size(max = 500, message = "Las notas no pueden exceder 500 caracteres")
     @Column(name = "notes", length = 500)
     private String notes;
 
@@ -61,15 +60,34 @@ public class Supplier implements Serializable {
     @Builder.Default
     private Boolean active = true;
 
+    @Min(value = 1, message = "La valoración debe ser entre 1 y 5")
+    @Max(value = 5, message = "La valoración debe ser entre 1 y 5")
     @Column(name = "rating")
-    private Integer rating; // 1-5 stars rating
+    private Integer rating;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private Employee createdBy;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    /**
+     * Many-to-Many relationship with IngredientCategory
+     * A supplier can supply multiple ingredient categories
+     */
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "supplier_ingredient_categories",
+            joinColumns = @JoinColumn(name = "id_supplier"),
+            inverseJoinColumns = @JoinColumn(name = "id_category")
+    )
+    @Builder.Default
+    private Set<IngredientCategory> categories = new HashSet<>();
 
     /**
      * Lifecycle callback to set updatedAt before update operations
@@ -90,21 +108,26 @@ public class Supplier implements Serializable {
     }
 
     /**
-     * Get supplier display name with contact info
+     * Add a category to this supplier
      */
-    public String getDisplayInfo() {
-        StringBuilder info = new StringBuilder(name);
-        if (contactPerson != null && !contactPerson.isEmpty()) {
-            info.append(" (").append(contactPerson).append(")");
-        }
-        return info.toString();
+    public void addCategory(IngredientCategory category) {
+        this.categories.add(category);
+        category.getSuppliers().add(this);
     }
 
     /**
-     * Check if supplier has complete contact information
+     * Remove a category from this supplier
      */
-    public boolean hasCompleteContactInfo() {
-        return phone != null && !phone.isEmpty() && 
-               email != null && !email.isEmpty();
+    public void removeCategory(IngredientCategory category) {
+        this.categories.remove(category);
+        category.getSuppliers().remove(this);
+    }
+
+    /**
+     * Get rating as stars string
+     */
+    public String getRatingStars() {
+        if (rating == null) return "";
+        return "⭐".repeat(rating);
     }
 }

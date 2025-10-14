@@ -1,14 +1,15 @@
-- El proyecto actual es un POS para restaurantes.
-- Todo el código, nombre de variables, etc. colocálos en ingles con nombres descriptivos.
-- Haz uso de buenas prácticas
-- Escribe código limpio, legible y fácil de mantener.
-- Maneja las excepciones y errores de forma robusta.
-- Aplica principios SOLID siempre que sea aplicable.
-- Estructura el código siguiendo una arquitectura de 3 capas : Presentación, Aplicación/Lógica de negocio, Acceso a datos.
-- Utiliza el patrón Modelo-Vista-Controlador para separar las responsabilidades.
-- Identifica oportunidades para aplicar patrones de diseño (Design Patterns) cuando la complejidad lo justifique.
-- Al modificar código existente, busca activamente oportunidades para refactorizarlo y mejorarlo.
-- Si te sugiero alguna implementación de código revisa si es la más optima, si no lo es hazmelo saber.
-- Si necesitas más información sobre alguna implementación que vayas a realizar pidemela.
-- Usa Spring Data JPA para interactuar con la BD.
-- El nombre de mi BD es: bd_restaurant, el puerto es 3306 y el host es localhost.
+El proyecto actual es un POS para restaurantes.
+Todo el código, nombre de variables, etc. colocálos en ingles con nombres descriptivos.
+Haz uso de buenas prácticas
+Escribe código limpio, legible y fácil de mantener.
+Maneja las excepciones y errores de forma robusta.
+Aplica principios SOLID siempre que sea aplicable.
+Estructura el código siguiendo una arquitectura de 3 capas : Presentación, Aplicación/Lógica de negocio, Acceso a datos.
+Utiliza el patrón Modelo-Vista-Controlador para separar las responsabilidades.
+Identifica oportunidades para aplicar patrones de diseño (Design Patterns) cuando la complejidad lo justifique.
+Al modificar código existente, busca activamente oportunidades para refactorizarlo y mejorarlo.
+Si te sugiero alguna implementación de código revisa si es la más optima, si no lo es hazmelo saber.
+Si necesitas más información sobre alguna implementación que vayas a realizar pidemela.
+Usa Spring Data JPA para interactuar con la BD.
+El nombre de mi BD es: bd_restaurant, el puerto es 3306 y el host es localhost.
+Todos los mensajes de success/error que se muestren en el frontend colocálos en español.

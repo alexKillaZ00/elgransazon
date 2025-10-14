@@ -1,99 +1,65 @@
 package com.aatechsolutions.elgransazon.application.service;
 
+import com.aatechsolutions.elgransazon.domain.entity.Employee;
 import com.aatechsolutions.elgransazon.domain.entity.Supplier;
+import com.aatechsolutions.elgransazon.domain.repository.EmployeeRepository;
 import com.aatechsolutions.elgransazon.domain.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Implementation of SupplierService
- * Handles business logic for supplier operations
+ * Service implementation for Supplier management
  */
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
 public class SupplierServiceImpl implements SupplierService {
 
     private final SupplierRepository supplierRepository;
+    private final EmployeeRepository employeeRepository;
 
     @Override
     @Transactional(readOnly = true)
-    public List<Supplier> getAllSuppliers() {
-        log.debug("Fetching all suppliers");
-        return supplierRepository.findAllOrderedByName();
+    public List<Supplier> findAll() {
+        log.info("Finding all suppliers");
+        return supplierRepository.findAllByOrderByNameAsc();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Supplier> getAllActiveSuppliers() {
-        log.debug("Fetching all active suppliers");
-        return supplierRepository.findAllActiveOrderedByName();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<Supplier> getSupplierById(Long id) {
-        log.debug("Fetching supplier with id: {}", id);
+    public Optional<Supplier> findById(Long id) {
+        log.info("Finding supplier by id: {}", id);
         return supplierRepository.findById(id);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Optional<Supplier> getSupplierByName(String name) {
-        log.debug("Fetching supplier with name: {}", name);
-        return supplierRepository.findByName(name);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Supplier> searchSuppliers(String searchTerm) {
-        log.debug("Searching suppliers with term: {}", searchTerm);
-        if (searchTerm == null || searchTerm.trim().isEmpty()) {
-            return getAllSuppliers();
-        }
-        return supplierRepository.searchSuppliers(searchTerm.trim());
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Supplier> getSuppliersByRating(Integer rating) {
-        log.debug("Fetching suppliers with rating: {}", rating);
-        return supplierRepository.findByRating(rating);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Supplier> getTopRatedSuppliers() {
-        log.debug("Fetching top rated suppliers");
-        return supplierRepository.findTopRatedSuppliers();
-    }
-
-    @Override
-    public Supplier createSupplier(Supplier supplier) {
+    @Transactional
+    public Supplier create(Supplier supplier) {
         log.info("Creating new supplier: {}", supplier.getName());
 
-        // Validate that supplier name doesn't already exist
-        if (supplierRepository.existsByNameIgnoreCase(supplier.getName())) {
-            log.error("Supplier name already exists: {}", supplier.getName());
-            throw new IllegalArgumentException("Supplier with name '" + supplier.getName() + "' already exists");
+        // Validate unique name
+        if (supplierRepository.existsByName(supplier.getName())) {
+            log.error("Supplier with name {} already exists", supplier.getName());
+            throw new IllegalArgumentException("Ya existe un proveedor con el nombre: " + supplier.getName());
         }
 
-        // Set default values if not provided
-        if (supplier.getActive() == null) {
-            supplier.setActive(true);
+        // Validate unique email if provided
+        if (supplier.getEmail() != null && !supplier.getEmail().isEmpty() &&
+            supplierRepository.existsByEmail(supplier.getEmail())) {
+            log.error("Supplier with email {} already exists", supplier.getEmail());
+            throw new IllegalArgumentException("Ya existe un proveedor con el email: " + supplier.getEmail());
         }
 
-        // Validate rating range if provided
-        if (supplier.getRating() != null && (supplier.getRating() < 1 || supplier.getRating() > 5)) {
-            log.error("Invalid rating value: {}", supplier.getRating());
-            throw new IllegalArgumentException("Rating must be between 1 and 5");
-        }
+        // Set created by (authenticated user)
+        setCreatedBy(supplier);
 
         Supplier savedSupplier = supplierRepository.save(supplier);
         log.info("Supplier created successfully with id: {}", savedSupplier.getIdSupplier());
@@ -101,80 +67,77 @@ public class SupplierServiceImpl implements SupplierService {
     }
 
     @Override
-    public Supplier updateSupplier(Long id, Supplier supplier) {
+    @Transactional
+    public Supplier update(Long id, Supplier supplierDetails) {
         log.info("Updating supplier with id: {}", id);
-
-        Supplier existingSupplier = supplierRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Supplier not found with id: {}", id);
-                    return new IllegalArgumentException("Supplier not found with id: " + id);
-                });
-
-        // Check if name is being changed and if the new name already exists
-        if (!existingSupplier.getName().equalsIgnoreCase(supplier.getName())) {
-            if (supplierRepository.existsByNameIgnoreCase(supplier.getName())) {
-                log.error("Supplier name already exists: {}", supplier.getName());
-                throw new IllegalArgumentException("Supplier with name '" + supplier.getName() + "' already exists");
-            }
-        }
-
-        // Validate rating range if provided
-        if (supplier.getRating() != null && (supplier.getRating() < 1 || supplier.getRating() > 5)) {
-            log.error("Invalid rating value: {}", supplier.getRating());
-            throw new IllegalArgumentException("Rating must be between 1 and 5");
-        }
-
-        // Update fields
-        existingSupplier.setName(supplier.getName());
-        existingSupplier.setContactPerson(supplier.getContactPerson());
-        existingSupplier.setPhone(supplier.getPhone());
-        existingSupplier.setEmail(supplier.getEmail());
-        existingSupplier.setAddress(supplier.getAddress());
-        existingSupplier.setNotes(supplier.getNotes());
-        existingSupplier.setActive(supplier.getActive());
-        existingSupplier.setRating(supplier.getRating());
-
-        Supplier updatedSupplier = supplierRepository.save(existingSupplier);
-        log.info("Supplier updated successfully: {}", updatedSupplier.getIdSupplier());
-        return updatedSupplier;
-    }
-
-    @Override
-    public void deleteSupplier(Long id) {
-        log.info("Soft deleting supplier with id: {}", id);
 
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Supplier not found with id: {}", id);
-                    return new IllegalArgumentException("Supplier not found with id: " + id);
+                    return new IllegalArgumentException("Proveedor no encontrado con id: " + id);
+                });
+
+        // Validate unique name if changed
+        if (!supplier.getName().equals(supplierDetails.getName()) &&
+            supplierRepository.existsByName(supplierDetails.getName())) {
+            log.error("Supplier with name {} already exists", supplierDetails.getName());
+            throw new IllegalArgumentException("Ya existe un proveedor con el nombre: " + supplierDetails.getName());
+        }
+
+        // Validate unique email if changed
+        if (supplierDetails.getEmail() != null && !supplierDetails.getEmail().isEmpty() &&
+            !supplierDetails.getEmail().equals(supplier.getEmail()) &&
+            supplierRepository.existsByEmail(supplierDetails.getEmail())) {
+            log.error("Supplier with email {} already exists", supplierDetails.getEmail());
+            throw new IllegalArgumentException("Ya existe un proveedor con el email: " + supplierDetails.getEmail());
+        }
+
+        // Update fields
+        supplier.setName(supplierDetails.getName());
+        supplier.setContactPerson(supplierDetails.getContactPerson());
+        supplier.setPhone(supplierDetails.getPhone());
+        supplier.setEmail(supplierDetails.getEmail());
+        supplier.setAddress(supplierDetails.getAddress());
+        supplier.setNotes(supplierDetails.getNotes());
+        supplier.setRating(supplierDetails.getRating());
+        supplier.setActive(supplierDetails.getActive());
+
+        // Update categories (ManyToMany relationship)
+        supplier.getCategories().clear();
+        if (supplierDetails.getCategories() != null) {
+            supplier.getCategories().addAll(supplierDetails.getCategories());
+        }
+
+        Supplier updatedSupplier = supplierRepository.save(supplier);
+        log.info("Supplier updated successfully: {}", id);
+        return updatedSupplier;
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        log.info("Deactivating supplier with id: {}", id);
+
+        Supplier supplier = supplierRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Supplier not found with id: {}", id);
+                    return new IllegalArgumentException("Proveedor no encontrado con id: " + id);
                 });
 
         supplier.setActive(false);
         supplierRepository.save(supplier);
-        log.info("Supplier soft deleted successfully: {}", id);
+        log.info("Supplier deactivated successfully: {}", id);
     }
 
     @Override
-    public void permanentlyDeleteSupplier(Long id) {
-        log.warn("Permanently deleting supplier with id: {}", id);
-
-        if (!supplierRepository.existsById(id)) {
-            log.error("Supplier not found with id: {}", id);
-            throw new IllegalArgumentException("Supplier not found with id: " + id);
-        }
-
-        supplierRepository.deleteById(id);
-        log.info("Supplier permanently deleted: {}", id);
-    }
-
-    @Override
-    public void activateSupplier(Long id) {
+    @Transactional
+    public void activate(Long id) {
         log.info("Activating supplier with id: {}", id);
 
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Supplier not found with id: {}", id);
-                    return new IllegalArgumentException("Supplier not found with id: " + id);
+                    return new IllegalArgumentException("Proveedor no encontrado con id: " + id);
                 });
 
         supplier.setActive(true);
@@ -184,22 +147,66 @@ public class SupplierServiceImpl implements SupplierService {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean supplierNameExists(String name) {
-        log.debug("Checking if supplier name exists: {}", name);
-        return supplierRepository.existsByNameIgnoreCase(name);
+    public List<Supplier> searchWithFilters(String search, Integer rating, Long categoryId, Boolean active) {
+        log.info("Searching suppliers with filters - search: {}, rating: {}, categoryId: {}, active: {}",
+                search, rating, categoryId, active);
+
+        // Normalize search string
+        String normalizedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+
+        List<Supplier> suppliers = supplierRepository.searchWithFilters(normalizedSearch, rating, categoryId, active);
+        log.info("Found {} suppliers with filters", suppliers.size());
+        return suppliers;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public long countActiveSuppliers() {
-        log.debug("Counting active suppliers");
-        return supplierRepository.countByActiveTrue();
+    public List<Supplier> findByCategoryId(Long categoryId) {
+        log.info("Finding suppliers for category ID: {}", categoryId);
+
+        List<Supplier> suppliers = supplierRepository.findByCategoriesIdCategory(categoryId);
+
+        // Sort alphabetically
+        suppliers.sort(Comparator.comparing(Supplier::getName, String.CASE_INSENSITIVE_ORDER));
+
+        log.info("Found {} suppliers for category ID: {}", suppliers.size(), categoryId);
+        return suppliers;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public long countInactiveSuppliers() {
-        log.debug("Counting inactive suppliers");
-        return supplierRepository.countByActiveFalse();
+    public long getActiveCount() {
+        return supplierRepository.countByActive(true);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long getInactiveCount() {
+        return supplierRepository.countByActive(false);
+    }
+
+    /**
+     * Set the created by field with the authenticated user
+     */
+    private void setCreatedBy(Supplier supplier) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated() &&
+                !"anonymousUser".equals(authentication.getPrincipal())) {
+
+                String username = authentication.getName();
+                Optional<Employee> employee = employeeRepository.findByUsername(username);
+
+                employee.ifPresent(supplier::setCreatedBy);
+            }
+        } catch (Exception e) {
+            log.warn("Could not set created by: {}", e.getMessage());
+        }
+    }
+
+    @Override
+    public List<Supplier> findAllActive() {
+        log.info("Finding all active suppliers");
+        return supplierRepository.findAllActive();
     }
 }
