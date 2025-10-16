@@ -4,6 +4,7 @@ import com.aatechsolutions.elgransazon.domain.entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -43,4 +44,26 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
      * @return true if employee exists, false otherwise
      */
     boolean existsByEmail(String email);
+
+    /**
+     * Find all enabled employees
+     * 
+     * @return List of enabled employees
+     */
+    List<Employee> findByEnabledTrue();
+
+    /**
+     * Count enabled employees
+     * 
+     * @return Number of enabled employees
+     */
+    long countByEnabledTrue();
+
+    /**
+     * Find employees by supervisor
+     * 
+     * @param supervisorId Supervisor's employee ID
+     * @return List of employees supervised by this employee
+     */
+    List<Employee> findBySupervisorIdEmpleado(Long supervisorId);
 }

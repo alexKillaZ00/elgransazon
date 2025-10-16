@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${employee.idEmpleado != null} ? 'Editar Empleado' : 'Nuevo Empleado'">El Gran Sazón - Empleado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#38e07b",
+                        "primary-dark": "#2bc866",
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+<body>
+    <div class="relative flex min-h-screen flex-col bg-white" style='font-family: "Work Sans", sans-serif;'>
+        <div class="flex flex-1 justify-center py-5">
+            <div class="flex flex-col max-w-[960px] flex-1 px-4">
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-3 pt-6">
+                    <h1 class="text-3xl font-bold text-gray-900" th:text="${employee.idEmpleado != null} ? 'Editar Empleado' : 'Nuevo Empleado'">Empleado</h1>
+                </div>
+
+                <!-- Form -->
+                <div class="bg-white rounded-lg border border-gray-200 p-6">
+                    <form th:action="@{${formAction}}" 
+                          th:object="${employee}" 
+                          method="post" 
+                          class="space-y-8">
+
+                        <!-- Personal Information Section -->
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b">Información Personal</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- First Name -->
+                                <div>
+                                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Nombre <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           th:field="*{nombre}" 
+                                           id="nombre"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                           required />
+                                    <p th:if="${#fields.hasErrors('nombre')}" 
+                                       th:errors="*{nombre}" 
+                                       class="mt-1 text-sm text-red-600"></p>
+                                </div>
+
+                                <!-- Last Name -->
+                                <div>
+                                    <label for="apellido" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Apellido <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           th:field="*{apellido}" 
+                                           id="apellido"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                           required />
+                                    <p th:if="${#fields.hasErrors('apellido')}" 
+                                       th:errors="*{apellido}" 
+                                       class="mt-1 text-sm text-red-600"></p>
+                                </div>
+
+                                <!-- Username -->
+                                <div>
+                                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Usuario <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           th:field="*{username}" 
+                                           id="username"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                           required />
+                                    <p class="mt-1 text-xs text-gray-500">Nombre único de usuario para el login</p>
+                                    <p th:if="${#fields.hasErrors('username')}" 
+                                       th:errors="*{username}" 
+                                       class="mt-1 text-sm text-red-600"></p>
+                                </div>
+
+                                <!-- Email -->
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Correo Electrónico <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="email" 
+                                           th:field="*{email}" 
+                                           id="email"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                           required />
+                                    <p th:if="${#fields.hasErrors('email')}" 
+                                       th:errors="*{email}" 
+                                       class="mt-1 text-sm text-red-600"></p>
+                                </div>
+
+                                <!-- Phone -->
+                                <div>
+                                    <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Teléfono <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="tel" 
+                                           th:field="*{telefono}" 
+                                           id="telefono"
+                                           placeholder="1234567890"
+                                           pattern="[0-9]{10}"
+                                           required
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                                    <p class="mt-1 text-xs text-gray-500">Debe ser un número de 10 dígitos</p>
+                                    <p th:if="${#fields.hasErrors('telefono')}" 
+                                       th:errors="*{telefono}" 
+                                       class="mt-1 text-sm text-red-600"></p>
+                                </div>
+
+                                <!-- Password -->
+                                <div>
+                                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Contraseña <span th:if="${employee.idEmpleado == null}" class="text-red-500">*</span>
+                                    </label>
+                                    <input type="password" 
+                                           name="password" 
+                                           id="password"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                           th:required="${employee.idEmpleado == null}" />
+                                    <p class="mt-1 text-xs text-gray-500" th:text="${employee.idEmpleado != null} ? 'Dejar en blanco para mantener la contraseña actual' : 'Mínimo 6 caracteres'"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Work Information Section -->
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b">Información Laboral</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Role -->
+                                <div>
+                                    <label for="role" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Rol <span class="text-red-500">*</span>
+                                    </label>
+                                    <select id="role" 
+                                            name="roleId"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" 
+                                            required>
+                                        <option value="">Seleccionar rol...</option>
+                                        <option th:each="role : ${availableRoles}" 
+                                                th:value="${role.idRol}"
+                                                th:text="${role.getDisplayName()}"
+                                                th:selected="${employee.primaryRole == role.nombreRol}">
+                                        </option>
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">El rol determina los permisos del empleado</p>
+                                </div>
+
+                                <!-- Salary -->
+                                <div>
+                                    <label for="salario" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Salario
+                                    </label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-2 text-gray-500">$</span>
+                                        <input type="number" 
+                                               th:field="*{salario}" 
+                                               id="salario"
+                                               step="0.01"
+                                               min="0"
+                                               class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary" />
+                                    </div>
+                                    <p th:if="${#fields.hasErrors('salario')}" 
+                                       th:errors="*{salario}" 
+                                       class="mt-1 text-sm text-red-600"></p>
+                                </div>
+
+                                <!-- Supervisor -->
+                                <div>
+                                    <label for="supervisor" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Supervisor
+                                    </label>
+                                    <select id="supervisor" 
+                                            name="supervisorId"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                        <option value="">Seleccionar supervisor (Por defecto: Admin)...</option>
+                                        <option th:each="supervisor : ${supervisors}" 
+                                                th:value="${supervisor.idEmpleado}"
+                                                th:text="${supervisor.fullName + ' (' + supervisor.roleDisplayName + ')'}"
+                                                th:selected="${employee.supervisor != null and employee.supervisor.idEmpleado == supervisor.idEmpleado}">
+                                        </option>
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">Si no se selecciona, se asignará el administrador por defecto</p>
+                                </div>
+
+                                <!-- Shift - Different UI for Create vs Edit -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                                        Turnos
+                                    </label>
+                                    
+                                    <!-- Create Mode: Simple Select -->
+                                    <div th:if="${employee.idEmpleado == null}">
+                                        <select id="shift" 
+                                                name="shiftId"
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                            <option value="">Sin turno asignado...</option>
+                                            <option th:each="shift : ${shifts}" 
+                                                    th:value="${shift.id}"
+                                                    th:text="${shift.name + ' (' + shift.timeRange + ')'}">
+                                            </option>
+                                        </select>
+                                        <p class="mt-1 text-xs text-gray-500">Solo se puede asignar un turno en la creación</p>
+                                    </div>
+                                    
+                                    <!-- Edit Mode: Button to open modal -->
+                                    <div th:if="${employee.idEmpleado != null}">
+                                        <button type="button" 
+                                                onclick="openShiftModal()"
+                                                class="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary hover:bg-gray-50 text-gray-600 hover:text-primary font-medium transition-all duration-200">
+                                            <span class="flex items-center justify-center">
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                                </svg>
+                                                Gestionar Turnos
+                                            </span>
+                                        </button>
+                                        <p class="mt-1 text-xs text-gray-500">
+                                            Actualmente asignado(s): 
+                                            <span class="font-medium text-gray-700" th:text="${employee.shifts != null and !employee.shifts.isEmpty()} ? ${employee.shiftNames} : 'Ninguno'">Ninguno</span>
+                                        </p>
+                                        <p class="mt-1 text-xs text-red-600">Nota: Solo se pueden agregar turnos aquí. Para remover, ir al módulo de Turnos</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enabled Status (Only for Edit) -->
+                        <div th:if="${employee.idEmpleado != null}">
+                            <h2 class="text-xl font-bold text-gray-900 mb-4 pb-2 border-b">Estado</h2>
+                            <div class="flex items-center">
+                                <input type="checkbox" 
+                                       th:field="*{enabled}" 
+                                       id="enabled"
+                                       class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary" />
+                                <label for="enabled" class="ml-2 text-sm font-medium text-gray-700">
+                                    Empleado activo
+                                </label>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Los empleados inactivos no pueden acceder al sistema</p>
+                        </div>
+
+                        <!-- Error Messages -->
+                        <div th:if="${errorMessage}" class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p class="text-red-800" th:text="${errorMessage}"></p>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-end space-x-3 pt-4 border-t">
+                            <a th:href="@{/admin/employees}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium">
+                                <span th:text="${employee.idEmpleado != null} ? 'Actualizar' : 'Crear'">Guardar</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Delete Button (Only for Edit) -->
+                    <form th:if="${employee.idEmpleado != null}" 
+                          th:action="@{/admin/employees/{id}/delete(id=${employee.idEmpleado})}" 
+                          method="post" 
+                          class="mt-4 pt-4 border-t"
+                          onsubmit="return confirm('¿Está seguro de eliminar este empleado? Esta acción no se puede deshacer.');">
+                        <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">
+                            Eliminar Empleado
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Back Button -->
+                <div class="mt-6">
+                    <a th:href="@{/admin/employees}" class="text-gray-600 hover:text-gray-800">← Volver a Empleados</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shift Assignment Modal (Only for Edit Mode) -->
+    <div th:if="${employee.idEmpleado != null}" 
+         id="shiftModal" 
+         class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-lg bg-white">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center pb-3 border-b">
+                <h3 class="text-xl font-bold text-gray-900">Gestionar Turnos</h3>
+                <button onclick="closeShiftModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="mt-4">
+                <!-- Info Message -->
+                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-sm text-blue-800">
+                        <strong>Nota:</strong> Los turnos ya asignados (marcados) no se pueden deseleccionar desde aquí. 
+                        Para remover turnos, debes ir al módulo de Turnos.
+                    </p>
+                </div>
+
+                <!-- Shifts List -->
+                <form id="shiftAssignmentForm" class="space-y-2">
+                    <input type="hidden" name="employeeId" th:value="${employee.idEmpleado}" />
+                    
+                    <div class="max-h-96 overflow-y-auto space-y-2">
+                        <div th:each="shift : ${shifts}" 
+                             class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                            <input type="checkbox" 
+                                   th:id="'shift-' + ${shift.id}"
+                                   th:value="${shift.id}"
+                                   name="shiftIds"
+                                   th:checked="${employee.shifts != null and employee.shifts.contains(shift)}"
+                                   th:disabled="${employee.shifts != null and employee.shifts.contains(shift)}"
+                                   class="w-5 h-5 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed" />
+                            <label th:for="'shift-' + ${shift.id}" 
+                                   class="ml-3 flex-1 cursor-pointer">
+                                <div class="font-medium text-gray-900" th:text="${shift.name}">Turno Mañana</div>
+                                <div class="text-sm text-gray-600" th:text="${shift.timeRange}">08:00 - 16:00</div>
+                                <div th:if="${shift.workDays != null and !shift.workDays.isEmpty()}" 
+                                     class="text-xs text-gray-500 mt-1" 
+                                     th:text="'Días: ' + ${shift.workDaysString}">Días: L, M, X, J, V</div>
+                            </label>
+                            <span th:if="${employee.shifts != null and employee.shifts.contains(shift)}"
+                                  class="ml-2 px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded">
+                                Asignado
+                            </span>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div th:if="${shifts == null or shifts.isEmpty()}" 
+                             class="text-center py-8 text-gray-500">
+                            No hay turnos disponibles
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                <button onclick="closeShiftModal()" 
+                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button onclick="assignShifts()" 
+                        class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium">
+                    Asignar Turnos Seleccionados
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Phone validation
+        document.getElementById('telefono').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '').substring(0, 10);
+        });
+
+        // Shift Modal Functions
+        function openShiftModal() {
+            document.getElementById('shiftModal').classList.remove('hidden');
+        }
+
+        function closeShiftModal() {
+            document.getElementById('shiftModal').classList.add('hidden');
+        }
+
+        function assignShifts() {
+            const form = document.getElementById('shiftAssignmentForm');
+            const employeeId = form.querySelector('input[name="employeeId"]').value;
+            const checkboxes = form.querySelectorAll('input[name="shiftIds"]:checked:not(:disabled)');
+            
+            // Get only the newly selected (not disabled) shift IDs
+            const selectedShiftIds = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (selectedShiftIds.length === 0) {
+                alert('No hay nuevos turnos seleccionados para asignar.');
+                return;
+            }
+
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Asignando...';
+            button.disabled = true;
+
+            // Assign shifts to each selected shift ID
+            const assignmentPromises = selectedShiftIds.map(shiftId => {
+                return fetch(`/admin/shifts/${shiftId}/assign`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `employeeIds=${employeeId}`
+                });
+            });
+
+            Promise.all(assignmentPromises)
+                .then(responses => {
+                    const allSuccessful = responses.every(r => r.ok);
+                    if (allSuccessful) {
+                        alert(`${selectedShiftIds.length} turno(s) asignado(s) exitosamente. La página se recargará.`);
+                        window.location.reload();
+                    } else {
+                        throw new Error('Algunos turnos no pudieron ser asignados');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al asignar los turnos. Por favor, intente nuevamente.');
+                    button.textContent = originalText;
+                    button.disabled = false;
+                });
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('shiftModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeShiftModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,10 +1,12 @@
 package com.aatechsolutions.elgransazon.infrastructure.security;
 
+import com.aatechsolutions.elgransazon.application.service.EmployeeService;
 import com.aatechsolutions.elgransazon.domain.entity.Role;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -16,20 +18,37 @@ import java.util.Collection;
 /**
  * Custom authentication success handler
  * Redirects users to role-specific pages after successful login
+ * and updates last access timestamp
  */
 @Component
 @Slf4j
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+    private final EmployeeService employeeService;
+    
+    public CustomAuthenticationSuccessHandler(@Lazy EmployeeService employeeService) {
+        this.employeeService = employeeService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
         
-        log.info("User {} logged in successfully", authentication.getName());
+        String username = authentication.getName();
+        log.info("User {} logged in successfully", username);
+        
+        // Update last access timestamp
+        try {
+            employeeService.updateLastAccess(username);
+            log.debug("Updated last access for user {}", username);
+        } catch (Exception e) {
+            log.error("Error updating last access for user {}", username, e);
+            // Don't fail login if last access update fails
+        }
         
         String targetUrl = determineTargetUrl(authentication);
-        log.debug("Redirecting user {} to {}", authentication.getName(), targetUrl);
+        log.debug("Redirecting user {} to {}", username, targetUrl);
         
         response.sendRedirect(targetUrl);
     }

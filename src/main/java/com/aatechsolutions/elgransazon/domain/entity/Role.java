@@ -37,13 +37,36 @@ public class Role implements Serializable {
      * Role name constants for easy reference
      */
     public static final String ADMIN = "ROLE_ADMIN";
+    public static final String MANAGER = "ROLE_MANAGER";
     public static final String WAITER = "ROLE_WAITER";
     public static final String CHEF = "ROLE_CHEF";
+    public static final String CASHIER = "ROLE_CASHIER";
 
     /**
      * Constructor for creating roles with just the name
      */
     public Role(String nombreRol) {
         this.nombreRol = nombreRol;
+    }
+
+    /**
+     * Get display name for the role (without ROLE_ prefix)
+     */
+    public String getDisplayName() {
+        if (nombreRol == null) {
+            return "Sin rol";
+        }
+        
+        String name = nombreRol.replace("ROLE_", "");
+        
+        // Map to Spanish names
+        switch (name) {
+            case "ADMIN": return "Administrador";
+            case "MANAGER": return "Gerente";
+            case "WAITER": return "Mesero";
+            case "CHEF": return "Chef";
+            case "CASHIER": return "Cajero";
+            default: return name;
+        }
     }
 }

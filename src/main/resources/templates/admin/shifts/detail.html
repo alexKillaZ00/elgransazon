@@ -79,7 +79,7 @@
                             <div>
                                 <dt class="text-sm font-medium text-gray-500">Días Laborales</dt>
                                 <dd class="flex flex-wrap gap-1 mt-1">
-                                    <span th:each="day : ${shift.workDays}" 
+                                    <span th:each="day : ${shift.sortedWorkDays}" 
                                           class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
                                           th:text="${day.getDisplayName()}">
                                     </span>
