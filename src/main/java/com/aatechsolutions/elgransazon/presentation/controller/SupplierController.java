@@ -95,6 +95,7 @@ public class SupplierController {
         // Get statistics
         long activeCount = supplierService.getActiveCount();
         long inactiveCount = supplierService.getInactiveCount();
+        long totalCount = activeCount + inactiveCount; // Total de proveedores (activos + inactivos)
 
         // Get all categories for filter dropdown
         List<IngredientCategory> allCategories = categoryService.findAllActive();
@@ -105,6 +106,7 @@ public class SupplierController {
         model.addAttribute("categoryId", categoryId);
         model.addAttribute("ingredientId", ingredientId);
         model.addAttribute("active", activeFilter);
+        model.addAttribute("totalCount", totalCount);
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("inactiveCount", inactiveCount);
         model.addAttribute("allCategories", allCategories);

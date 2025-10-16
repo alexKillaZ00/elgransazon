@@ -43,10 +43,12 @@ public class IngredientCategoryController {
         // Get statistics
         long activeCount = categoryService.getActiveCount();
         long inactiveCount = categoryService.getInactiveCount();
+        long totalCount = activeCount + inactiveCount; // Total de categorías (activas + inactivas)
 
         model.addAttribute("categories", categories);
         model.addAttribute("search", search);
         model.addAttribute("active", activeFilter);
+        model.addAttribute("totalCount", totalCount);
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("inactiveCount", inactiveCount);
 
