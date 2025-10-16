@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="'Asignar Empleados - ' + ${shift.name}">Asignar Empleados</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#38e07b",
+                        "primary-dark": "#2bc866",
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+<body>
+    <div class="relative flex min-h-screen flex-col bg-white" style='font-family: "Work Sans", sans-serif;'>
+        <div class="flex flex-1 justify-center py-5">
+            <div class="flex flex-col max-w-[1200px] flex-1 px-4">
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-3 pt-6">
+                    <h1 class="text-3xl font-bold text-gray-900">
+                        Asignar Empleados - <span th:text="${shift.name}"></span>
+                    </h1>
+                    <a th:href="@{/admin/shifts/{id}(id=${shift.id})}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        ← Volver
+                    </a>
+                </div>
+
+                <!-- Alerts -->
+                <div th:if="${successMessage}" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-green-800" th:text="${successMessage}"></p>
+                </div>
+
+                <div th:if="${errorMessage}" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-800" th:text="${errorMessage}"></p>
+                </div>
+
+                <!-- Shift Info -->
+                <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900" th:text="${shift.name}"></h2>
+                            <p class="text-gray-600 mt-1" th:text="${shift.timeRange}"></p>
+                            <div class="flex flex-wrap gap-1 mt-2">
+                                <span th:each="day : ${shift.workDays}" 
+                                      class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                                      th:text="${day.getDisplayName()}">
+                                </span>
+                            </div>
+                        </div>
+                        <div class="text-center bg-blue-50 rounded-lg p-4">
+                            <p class="text-3xl font-bold text-blue-600" th:text="${assignedEmployees.size()}">0</p>
+                            <p class="text-sm text-gray-600">Empleados Asignados</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Available Employees -->
+                    <div class="bg-white rounded-lg border border-gray-200">
+                        <div class="px-6 py-4 bg-primary text-white rounded-t-lg">
+                            <h2 class="text-lg font-bold">
+                                Empleados Disponibles (<span th:text="${availableEmployees.size()}">0</span>)
+                            </h2>
+                        </div>
+
+                        <div th:if="${availableEmployees.isEmpty()}" class="p-6 text-center text-gray-600">
+                            No hay empleados disponibles para asignar
+                        </div>
+
+                        <div th:if="${!availableEmployees.isEmpty()}">
+                            <div class="p-4 border-b border-gray-200">
+                                <input type="text" 
+                                       id="searchAvailable" 
+                                       placeholder="Buscar empleados..." 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            </div>
+
+                            <form th:action="@{/admin/shifts/{id}/assign(id=${shift.id})}" method="post" id="assignForm">
+                                <div id="availableList" class="divide-y divide-gray-200 max-h-[500px] overflow-y-auto">
+                                    <label th:each="employee : ${availableEmployees}" 
+                                           class="flex items-center px-6 py-4 hover:bg-gray-50 cursor-pointer">
+                                        <input type="checkbox" 
+                                               name="employeeIds" 
+                                               th:value="${employee.idEmpleado}"
+                                               class="w-4 h-4 text-primary border-gray-300 rounded employee-checkbox">
+                                        <div class="ml-3 flex-1">
+                                            <p class="font-medium text-gray-900" th:text="${employee.fullName}"></p>
+                                            <p class="text-sm text-gray-500" th:text="${employee.username}"></p>
+                                            <p class="text-sm text-gray-500" th:text="${employee.email}"></p>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
+                                    <span id="selectedCount" class="text-sm text-gray-600">0 seleccionados</span>
+                                    <button type="submit" 
+                                            id="assignBtn" 
+                                            disabled 
+                                            class="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Asignar Seleccionados →
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Already Assigned -->
+                    <div class="bg-white rounded-lg border border-gray-200">
+                        <div class="px-6 py-4 bg-green-500 text-white rounded-t-lg">
+                            <h2 class="text-lg font-bold">
+                                Empleados Asignados (<span th:text="${assignedEmployees.size()}">0</span>)
+                            </h2>
+                        </div>
+
+                        <div th:if="${assignedEmployees.isEmpty()}" class="p-6 text-center text-gray-600">
+                            No hay empleados asignados todavía
+                        </div>
+
+                        <div th:if="${!assignedEmployees.isEmpty()}">
+                            <div class="p-4 border-b border-gray-200">
+                                <input type="text" 
+                                       id="searchAssigned" 
+                                       placeholder="Buscar asignados..." 
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                            </div>
+
+                            <div id="assignedList" class="divide-y divide-gray-200 max-h-[500px] overflow-y-auto">
+                                <div th:each="employee : ${assignedEmployees}" 
+                                     class="flex items-center px-6 py-4 hover:bg-gray-50">
+                                    <div class="flex-1">
+                                        <p class="font-medium text-gray-900" th:text="${employee.fullName}"></p>
+                                        <p class="text-sm text-gray-500" th:text="${employee.username}"></p>
+                                        <p class="text-sm text-gray-500" th:text="${employee.email}"></p>
+                                    </div>
+                                    <span class="ml-3 px-3 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">
+                                        ✓ Asignado
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Track selection
+        function updateSelectedCount() {
+            const count = document.querySelectorAll('input[name="employeeIds"]:checked').length;
+            document.getElementById('selectedCount').textContent = count + ' seleccionado' + (count !== 1 ? 's' : '');
+            document.getElementById('assignBtn').disabled = count === 0;
+        }
+
+        document.querySelectorAll('input[name="employeeIds"]').forEach(cb => {
+            cb.addEventListener('change', updateSelectedCount);
+        });
+
+        // Search available
+        document.getElementById('searchAvailable')?.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            document.querySelectorAll('#availableList label').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Search assigned
+        document.getElementById('searchAssigned')?.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            document.querySelectorAll('#assignedList > div').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Confirm
+        document.getElementById('assignForm')?.addEventListener('submit', function(e) {
+            const count = document.querySelectorAll('input[name="employeeIds"]:checked').length;
+            if (!confirm(`¿Está seguro de asignar ${count} empleado(s) a este turno?`)) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

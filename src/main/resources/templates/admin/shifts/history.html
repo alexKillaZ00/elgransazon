@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="'Historial - ' + ${shift.name}">Historial del Turno</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#38e07b",
+                        "primary-dark": "#2bc866",
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+<body>
+    <div class="relative flex min-h-screen flex-col bg-white" style='font-family: "Work Sans", sans-serif;'>
+        <div class="flex flex-1 justify-center py-5">
+            <div class="flex flex-col max-w-[1000px] flex-1 px-4">
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-3 pt-6">
+                    <h1 class="text-3xl font-bold text-gray-900">
+                        Historial - <span th:text="${shift.name}"></span>
+                    </h1>
+                    <a th:href="@{/admin/shifts/{id}(id=${shift.id})}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        ← Volver
+                    </a>
+                </div>
+
+                <!-- Shift Summary -->
+                <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-900" th:text="${shift.name}"></h2>
+                            <span th:if="${shift.active}" class="inline-block mt-1 px-2 py-1 text-xs bg-green-100 text-green-800 rounded">Activo</span>
+                            <span th:if="${!shift.active}" class="inline-block mt-1 px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded">Inactivo</span>
+                            <p class="text-gray-600 mt-2" th:text="${shift.timeRange}"></p>
+                            <div class="flex flex-wrap gap-1 mt-2">
+                                <span th:each="day : ${shift.workDays}" 
+                                      class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                                      th:text="${day.getDisplayName()}">
+                                </span>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-green-50 rounded-lg p-3">
+                                <p class="text-2xl font-bold text-green-600" th:text="${assignedCount}">0</p>
+                                <p class="text-xs text-gray-600">Asignaciones</p>
+                            </div>
+                            <div class="bg-red-50 rounded-lg p-3">
+                                <p class="text-2xl font-bold text-red-600" th:text="${removedCount}">0</p>
+                                <p class="text-xs text-gray-600">Remociones</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Timeline -->
+                <div class="bg-white rounded-lg border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-bold text-gray-900">
+                                Historial de Cambios (<span id="filteredCount" th:text="${history.size()}">0</span>)
+                            </h2>
+                        </div>
+                        
+                        <!-- Filters -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Order Filter -->
+                            <div>
+                                <label for="orderFilter" class="block text-sm font-medium text-gray-700 mb-1">Ordenar por:</label>
+                                <select id="orderFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                    <option value="desc">Más reciente primero</option>
+                                    <option value="asc">Más antiguo primero</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Employee Filter -->
+                            <div>
+                                <label for="employeeFilter" class="block text-sm font-medium text-gray-700 mb-1">Empleado:</label>
+                                <select id="employeeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                    <option value="">Todos los empleados</option>
+                                    <option th:each="record : ${history}" 
+                                            th:value="${record.employee.idEmpleado}"
+                                            th:text="${record.employee.fullName}"
+                                            th:attr="data-unique=${record.employee.idEmpleado}">
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <!-- Action Filter -->
+                            <div>
+                                <label for="actionFilter" class="block text-sm font-medium text-gray-700 mb-1">Tipo de acción:</label>
+                                <select id="actionFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary">
+                                    <option value="">Todas las acciones</option>
+                                    <option value="ASSIGNED">Solo asignaciones</option>
+                                    <option value="REMOVED">Solo remociones</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${history.isEmpty()}" class="p-6 text-center text-gray-600">
+                        No hay historial de cambios para este turno
+                    </div>
+
+                    <div th:if="${!history.isEmpty()}" class="p-6" id="historyContainer">
+                        <div class="space-y-4" id="historyTimeline">
+                            <div th:each="record : ${history}" 
+                                 class="history-record relative pl-8 pb-8 border-l-2 border-gray-200 last:pb-0"
+                                 th:attr="data-employee-id=${record.employee.idEmpleado},
+                                          data-action=${record.action.name()},
+                                          data-timestamp=${record.actionDate}">
+                                <!-- Timeline Icon -->
+                                <div class="absolute left-[-9px] top-0 w-4 h-4 rounded-full" 
+                                     th:classappend="${record.action.name() == 'ASSIGNED'} ? 'bg-green-500' : 'bg-red-500'">
+                                </div>
+
+                                <!-- Record Card -->
+                                <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                    <!-- Header -->
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div>
+                                            <span th:if="${record.action.name() == 'ASSIGNED'}" 
+                                                  class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded font-medium">
+                                                ✓ ASIGNADO
+                                            </span>
+                                            <span th:if="${record.action.name() == 'REMOVED'}" 
+                                                  class="px-2 py-1 text-xs bg-red-100 text-red-800 rounded font-medium">
+                                                ✗ REMOVIDO
+                                            </span>
+                                            <h3 class="font-bold text-gray-900 mt-2" th:text="${record.employee.fullName}"></h3>
+                                        </div>
+                                        <span class="text-sm text-gray-500" th:text="${record.getFormattedActionDate()}"></span>
+                                    </div>
+
+                                    <!-- Details -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <p class="text-gray-500">Usuario:</p>
+                                            <p class="font-medium text-gray-900" th:text="${record.employee.username}"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500">Email:</p>
+                                            <p class="font-medium text-gray-900" th:text="${record.employee.email}"></p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500">Acción realizada por:</p>
+                                            <p class="font-medium text-gray-900">
+                                                <span th:if="${record.actionBy != null}" th:text="${record.actionBy.fullName}"></span>
+                                                <span th:if="${record.actionBy == null}" class="italic text-gray-500">Sistema</span>
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500">Fecha y hora:</p>
+                                            <p class="font-medium text-gray-900" th:text="${record.getFormattedActionDate()}"></p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reason -->
+                                    <div th:if="${record.reason != null and !#strings.isEmpty(record.reason)}" 
+                                         class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                        <p class="text-xs font-medium text-yellow-900 mb-1">Motivo:</p>
+                                        <p class="text-sm text-yellow-800" th:text="${record.reason}"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderFilter = document.getElementById('orderFilter');
+            const employeeFilter = document.getElementById('employeeFilter');
+            const actionFilter = document.getElementById('actionFilter');
+            const historyTimeline = document.getElementById('historyTimeline');
+            const filteredCount = document.getElementById('filteredCount');
+            
+            // Remove duplicate employee options
+            const employeeOptions = Array.from(employeeFilter.options);
+            const seen = new Set();
+            employeeOptions.forEach(option => {
+                if (option.value && seen.has(option.value)) {
+                    option.remove();
+                } else if (option.value) {
+                    seen.add(option.value);
+                }
+            });
+            
+            // Apply filters
+            function applyFilters() {
+                const records = Array.from(document.querySelectorAll('.history-record'));
+                const orderValue = orderFilter.value;
+                const employeeValue = employeeFilter.value;
+                const actionValue = actionFilter.value;
+                
+                // Filter records
+                let visibleCount = 0;
+                records.forEach(record => {
+                    const employeeId = record.getAttribute('data-employee-id');
+                    const action = record.getAttribute('data-action');
+                    
+                    let show = true;
+                    
+                    // Employee filter
+                    if (employeeValue && employeeId !== employeeValue) {
+                        show = false;
+                    }
+                    
+                    // Action filter
+                    if (actionValue && action !== actionValue) {
+                        show = false;
+                    }
+                    
+                    if (show) {
+                        record.style.display = '';
+                        visibleCount++;
+                    } else {
+                        record.style.display = 'none';
+                    }
+                });
+                
+                // Sort records
+                if (orderValue === 'asc') {
+                    records.sort((a, b) => {
+                        const dateA = new Date(a.getAttribute('data-timestamp'));
+                        const dateB = new Date(b.getAttribute('data-timestamp'));
+                        return dateA - dateB;
+                    });
+                } else {
+                    records.sort((a, b) => {
+                        const dateA = new Date(a.getAttribute('data-timestamp'));
+                        const dateB = new Date(b.getAttribute('data-timestamp'));
+                        return dateB - dateA;
+                    });
+                }
+                
+                // Re-append sorted records
+                records.forEach(record => {
+                    historyTimeline.appendChild(record);
+                });
+                
+                // Update count
+                filteredCount.textContent = visibleCount;
+            }
+            
+            // Event listeners
+            orderFilter.addEventListener('change', applyFilters);
+            employeeFilter.addEventListener('change', applyFilters);
+            actionFilter.addEventListener('change', applyFilters);
+        });
+    </script>
+</body>
+</html>
