@@ -43,16 +43,7 @@ public class AdminController {
 
         return "admin/reservations";
     }
-      @GetMapping("/tables")
-    public String tables(Authentication authentication, Model model) {
-        String username = authentication.getName();
-        log.info("Admin {} accessed tables", username);
-
-        model.addAttribute("username", username);
-        model.addAttribute("role", "Administrator");
-
-        return "admin/tables";
-    }
+    
     @GetMapping("/inventory")
     public String inventory(Authentication authentication, Model model) {
         String username = authentication.getName();
