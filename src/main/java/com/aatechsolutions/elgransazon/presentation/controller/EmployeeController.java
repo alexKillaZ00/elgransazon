@@ -49,12 +49,16 @@ public class EmployeeController {
         
         long totalCount = employeeService.countAll();
         long enabledCount = employeeService.countEnabled();
+        long disabledCount = totalCount - enabledCount;
+        long rolesCount = allRoles.size();
         
         model.addAttribute("employees", employees);
         model.addAttribute("allShifts", allShifts);
         model.addAttribute("allRoles", allRoles);
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("enabledCount", enabledCount);
+        model.addAttribute("disabledCount", disabledCount);
+        model.addAttribute("rolesCount", rolesCount);
         
         return "admin/employees/list";
     }

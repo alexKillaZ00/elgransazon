@@ -14,9 +14,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +37,29 @@ public class ShiftController {
     private final ShiftService shiftService;
     private final EmployeeService employeeService;
     private final EmployeeShiftHistoryService historyService;
+
+    /**
+     * Configure date/time formatting for form binding
+     */
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(LocalTime.class, new java.beans.PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) {
+                if (text == null || text.trim().isEmpty()) {
+                    setValue(null);
+                } else {
+                    setValue(LocalTime.parse(text, DateTimeFormatter.ISO_LOCAL_TIME));
+                }
+            }
+            
+            @Override
+            public String getAsText() {
+                LocalTime value = (LocalTime) getValue();
+                return (value != null) ? value.format(DateTimeFormatter.ISO_LOCAL_TIME) : "";
+            }
+        });
+    }
 
     /**
      * Show list of all shifts

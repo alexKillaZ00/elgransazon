@@ -1,130 +1,284 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${isEdit ? 'Editar Red Social' : 'Nueva Red Social'}">Red Social - El Gran Sazón</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h4 class="mb-0">
-                            <i class="fas fa-share-alt"></i>
-                            <span th:text="${isEdit ? 'Editar Red Social' : 'Nueva Red Social'}"></span>
-                        </h4>
-                    </div>
-                    <div class="card-body">
-                        <!-- Error Messages -->
-                        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-
-                        <form th:action="${isEdit ? '/admin/system-configuration/social-networks/' + socialNetwork.id + '/update' : '/admin/system-configuration/social-networks/create'}" 
-                              th:object="${socialNetwork}" 
-                              method="post">
-                            
-                            <input type="hidden" th:field="*{id}" th:if="${isEdit}">
-
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Nombre *</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="name" 
-                                       th:field="*{name}" 
-                                       th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''"
-                                       placeholder="Ej: Facebook, Instagram, Twitter"
-                                       required>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="url" class="form-label">URL *</label>
-                                <input type="url" 
-                                       class="form-control" 
-                                       id="url" 
-                                       th:field="*{url}" 
-                                       th:classappend="${#fields.hasErrors('url')} ? 'is-invalid' : ''"
-                                       placeholder="https://facebook.com/tupagina"
-                                       required>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('url')}" th:errors="*{url}"></div>
-                                <small class="form-text text-muted">Debe comenzar con http:// o https://</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="icon" class="form-label">Icono (Clase CSS)</label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="icon" 
-                                       th:field="*{icon}" 
-                                       placeholder="Ej: fab fa-facebook, fab fa-instagram">
-                                <small class="form-text text-muted">
-                                    Clase de Font Awesome. 
-                                    <a href="https://fontawesome.com/icons" target="_blank">Ver iconos disponibles</a>
-                                </small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="displayOrder" class="form-label">Orden de Visualización</label>
-                                <input type="number" 
-                                       class="form-control" 
-                                       id="displayOrder" 
-                                       th:field="*{displayOrder}" 
-                                       min="1"
-                                       placeholder="1">
-                                <small class="form-text text-muted">Número que determina el orden de visualización</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <input class="form-check-input" 
-                                           type="checkbox" 
-                                           id="active" 
-                                           th:field="*{active}">
-                                    <label class="form-check-label" for="active">Activo</label>
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-between">
-                                <a th:href="@{/admin/system-configuration}" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Cancelar
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save"></i>
-                                    <span th:text="${isEdit ? 'Actualizar' : 'Guardar'}"></span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Preview Section -->
-                <div class="card mt-3" th:if="${socialNetwork.icon != null && !socialNetwork.icon.isEmpty()}">
-                    <div class="card-body">
-                        <h6>Vista Previa del Icono:</h6>
-                        <i th:class="${socialNetwork.icon}" style="font-size: 2rem;"></i>
-                    </div>
-                </div>
-            </div>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+  lang="es"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title
+      th:text="${isEdit ? 'Editar Red Social' : 'Nueva Red Social'} + ' - El Sabor'"
+    >
+      Red Social - El Sabor
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#38e07b",
+              "primary-dark": "#2bc866",
+              "background-light": "#f8faf9",
+              "background-dark": "#0f1713",
+            },
+            fontFamily: {
+              display: ["Work Sans"],
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body
+    class="bg-gradient-to-br from-background-light to-gray-50 dark:from-background-dark dark:to-gray-900 font-display text-gray-800 dark:text-gray-200 min-h-screen"
+  >
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8">
+      <!-- HEADER -->
+      <div class="mb-6 sm:mb-8">
+        <div class="flex items-center gap-4 mb-4">
+          <a
+            th:href="@{/admin/system-configuration}"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+          >
+            <span class="material-symbols-outlined text-2xl">arrow_back</span>
+          </a>
+          <div>
+            <h1
+              class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white"
+              th:text="${isEdit ? 'Editar Red Social' : 'Nueva Red Social'}"
+            >
+              Nueva Red Social
+            </h1>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400">
+              Completa el formulario para guardar la red social
+            </p>
+          </div>
         </div>
+      </div>
+
+      <!-- ERROR MESSAGE -->
+      <div
+        th:if="${errorMessage}"
+        class="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-400 rounded-xl"
+      >
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined">error</span>
+          <span th:text="${errorMessage}"></span>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div
+        class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-6 sm:p-8"
+      >
+        <form
+          th:action="${isEdit ? '/admin/system-configuration/social-networks/' + socialNetwork.id + '/update' : '/admin/system-configuration/social-networks/create'}"
+          th:object="${socialNetwork}"
+          method="post"
+        >
+          <input type="hidden" th:field="*{id}" th:if="${isEdit}" />
+
+          <!-- Name Field -->
+          <div class="mb-6">
+            <label
+              for="name"
+              class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Nombre de la Red Social *
+            </label>
+            <input
+              type="text"
+              id="name"
+              th:field="*{name}"
+              class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              placeholder="Ej: Facebook, Instagram, Twitter..."
+              required
+            />
+            <p
+              th:if="${#fields.hasErrors('name')}"
+              th:errors="*{name}"
+              class="mt-2 text-sm text-red-600 dark:text-red-400"
+            ></p>
+          </div>
+
+          <!-- URL Field -->
+          <div class="mb-6">
+            <label
+              for="url"
+              class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+            >
+              URL *
+            </label>
+            <input
+              type="url"
+              id="url"
+              th:field="*{url}"
+              class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              placeholder="https://facebook.com/tupagina"
+              required
+            />
+            <p
+              th:if="${#fields.hasErrors('url')}"
+              th:errors="*{url}"
+              class="mt-2 text-sm text-red-600 dark:text-red-400"
+            ></p>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Debe comenzar con http:// o https://
+            </p>
+          </div>
+
+          <!-- Icon Field -->
+          <div class="mb-6">
+            <label
+              for="icon"
+              class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Icono (Clase CSS de Font Awesome)
+            </label>
+            <div class="flex gap-3">
+              <input
+                type="text"
+                id="icon"
+                th:field="*{icon}"
+                class="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                placeholder="Ej: fab fa-facebook, fab fa-instagram..."
+              />
+              <div
+                class="w-14 h-14 flex items-center justify-center bg-primary/10 rounded-xl"
+              >
+                <i
+                  id="iconPreview"
+                  th:class="${socialNetwork.icon}"
+                  class="text-primary text-3xl"
+                ></i>
+              </div>
+            </div>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Clase de Google Material Icons.
+              <a
+                href="https://fonts.google.com/icons"
+                target="_blank"
+                class="text-primary hover:underline"
+                >Ver iconos disponibles</a
+              >
+            </p>
+          </div>
+
+          <!-- Display Order Field -->
+          <div class="mb-6">
+            <label
+              for="displayOrder"
+              class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+            >
+              Orden de Visualización
+            </label>
+            <input
+              type="number"
+              id="displayOrder"
+              th:field="*{displayOrder}"
+              class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              placeholder="1"
+              min="1"
+            />
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Número que determina el orden de visualización (menor número =
+              aparece primero)
+            </p>
+          </div>
+
+          <!-- Active Checkbox -->
+          <div class="mb-6">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                id="active"
+                th:field="*{active}"
+                class="w-5 h-5 rounded border-gray-300 dark:border-gray-700 text-primary focus:ring-2 focus:ring-primary transition-colors"
+              />
+              <span
+                class="text-sm font-semibold text-gray-700 dark:text-gray-300"
+                >Red Social Activa</span
+              >
+            </label>
+            <p class="mt-2 ml-8 text-xs text-gray-500 dark:text-gray-400">
+              Las redes sociales inactivas no se mostrarán públicamente
+            </p>
+          </div>
+
+          <!-- Form Actions -->
+          <div
+            class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-800"
+          >
+            <button
+              type="submit"
+              class="flex-1 sm:flex-initial px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-primary/30 transition-all"
+            >
+              <span class="flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined">save</span>
+                <span
+                  th:text="${isEdit ? 'Actualizar Red Social' : 'Crear Red Social'}"
+                  >Guardar</span
+                >
+              </span>
+            </button>
+            <a
+              th:href="@{/admin/system-configuration}"
+              class="flex-1 sm:flex-initial px-6 py-3 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors text-center"
+            >
+              Cancelar
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <!-- Preview Section -->
+      <div
+        class="mt-6 bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 p-6"
+        th:if="${socialNetwork.icon != null && !socialNetwork.icon.isEmpty()}"
+      >
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">
+          Vista Previa del Icono:
+        </h3>
+        <div
+          class="flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-800 rounded-xl"
+        >
+          <i
+            th:class="${socialNetwork.icon}"
+            class="text-primary"
+            style="font-size: 4rem"
+          ></i>
+        </div>
+      </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome (para los iconos) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
     <script>
-        // Preview icon
-        document.getElementById('icon').addEventListener('input', function(e) {
-            const iconValue = e.target.value;
-            const preview = document.querySelector('.card.mt-3 i');
-            if (preview) {
-                preview.className = iconValue;
-            }
-        });
+      // Icon preview update
+      const iconInput = document.getElementById("icon");
+      const iconPreview = document.getElementById("iconPreview");
+
+      iconInput.addEventListener("input", (e) => {
+        const iconClass = e.target.value.trim() || "fas fa-share-alt";
+        iconPreview.className = iconClass + " text-primary text-3xl";
+      });
     </script>
-</body>
+  </body>
 </html>
