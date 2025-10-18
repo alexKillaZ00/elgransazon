@@ -90,4 +90,19 @@ public interface RestaurantTableService {
      * Get all distinct locations
      */
     List<String> getDistinctLocations();
+
+    /**
+     * Find table by ID or throw exception
+     */
+    RestaurantTable findByIdOrThrow(Long id);
+
+    /**
+     * Save a table (for internal use)
+     */
+    RestaurantTable save(RestaurantTable table);
+
+    /**
+     * Mark a reserved table as occupied (if validation passes)
+     */
+    RestaurantTable markAsOccupied(Long id, String username);
 }

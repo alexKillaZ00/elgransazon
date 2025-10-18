@@ -65,6 +65,13 @@ public class SystemConfiguration implements Serializable {
     @Column(name = "tax_rate", nullable = false, precision = 5, scale = 2)
     private BigDecimal taxRate;
 
+    @NotNull(message = "Average consumption time is required")
+    @Min(value = 30, message = "Average consumption time must be at least 30 minutes")
+    @Max(value = 480, message = "Average consumption time cannot exceed 480 minutes (8 hours)")
+    @Column(name = "average_consumption_time_minutes", nullable = false)
+    @Builder.Default
+    private Integer averageConsumptionTimeMinutes = 120; // Default: 2 hours
+
     // Work days stored as comma-separated enum values
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "system_work_days", joinColumns = @JoinColumn(name = "system_configuration_id"))
@@ -178,5 +185,25 @@ public class SystemConfiguration implements Serializable {
         return businessHours.stream()
                 .filter(hours -> hours.getDayOfWeek().equals(day))
                 .findFirst();
+    }
+
+    /**
+     * Get formatted average consumption time (e.g., "2 horas" or "90 minutos")
+     */
+    public String getAverageConsumptionTimeDisplay() {
+        if (averageConsumptionTimeMinutes == null) {
+            return "N/A";
+        }
+        
+        int hours = averageConsumptionTimeMinutes / 60;
+        int minutes = averageConsumptionTimeMinutes % 60;
+        
+        if (hours > 0 && minutes == 0) {
+            return hours == 1 ? "1 hora" : hours + " horas";
+        } else if (hours > 0) {
+            return hours + "h " + minutes + "min";
+        } else {
+            return minutes + " minutos";
+        }
     }
 }

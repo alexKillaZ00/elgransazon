@@ -577,6 +577,11 @@
                     Estado
                   </th>
                   <th
+                    class="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400"
+                  >
+                    Ocupada
+                  </th>
+                  <th
                     class="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-400"
                   >
                     Comentarios
@@ -673,6 +678,24 @@
                     </span>
                   </td>
 
+                  <td class="px-6 py-4 text-center">
+                    <!-- Show badge if table is reserved AND occupied -->
+                    <span
+                      th:if="${table.status.name() == 'RESERVED' && table.isOccupied}"
+                      class="inline-flex items-center rounded-full bg-amber-100 dark:bg-amber-900/30 px-3 py-1 text-xs font-medium text-amber-800 dark:text-amber-400"
+                    >
+                      <span class="material-symbols-outlined text-sm mr-1">check_circle</span>
+                      Sí
+                    </span>
+                    <!-- Show dash if not reserved or not occupied -->
+                    <span
+                      th:if="${table.status.name() != 'RESERVED' || !table.isOccupied}"
+                      class="text-gray-400 dark:text-gray-600"
+                    >
+                      -
+                    </span>
+                  </td>
+
                   <td class="px-6 py-4">
                     <p
                       class="text-sm text-gray-600 dark:text-gray-400 truncate max-w-xs"
@@ -710,6 +733,28 @@
                           >edit</span
                         >
                       </a>
+                      <!-- Occupy button (only show if table is RESERVED and NOT occupied) -->
+                      <button
+                        th:if="${table.status.name() == 'RESERVED' && !table.isOccupied}"
+                        th:onclick="'occupyTable(' + ${table.id} + ')'"
+                        class="group flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-amber-100 hover:text-amber-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-amber-900/30 dark:hover:text-amber-400 transition-colors"
+                        title="Ocupar mesa reservada"
+                      >
+                        <span class="material-symbols-outlined text-lg"
+                          >event_seat</span
+                        >
+                      </button>
+                      <!-- Unoccupy button (only show if table is RESERVED and occupied) -->
+                      <button
+                        th:if="${table.status.name() == 'RESERVED' && table.isOccupied}"
+                        th:onclick="'unoccupyTable(' + ${table.id} + ')'"
+                        class="group flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-purple-900/30 dark:hover:text-purple-400 transition-colors"
+                        title="Desocupar mesa"
+                      >
+                        <span class="material-symbols-outlined text-lg"
+                          >meeting_room</span
+                        >
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -1072,6 +1117,144 @@
 
       function closeModal() {
         document.getElementById("tableModal").classList.add("hidden");
+      }
+
+      // Occupy reserved table function
+      function occupyTable(tableId) {
+        Swal.fire({
+          title: '¿Ocupar mesa reservada?',
+          text: 'Se verificará si hay tiempo suficiente antes de la próxima reservación',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#38e07b',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sí, ocupar',
+          cancelButtonText: 'Cancelar',
+          customClass: {
+            popup: 'rounded-2xl',
+            confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+            cancelButton: 'rounded-xl px-6 py-2.5 font-semibold',
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch(`/admin/tables/${tableId}/mark-occupied`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: data.message,
+                    confirmButtonColor: '#38e07b',
+                    customClass: {
+                      popup: 'rounded-2xl',
+                      confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+                    },
+                  }).then(() => {
+                    location.reload();
+                  });
+                } else {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'No se puede ocupar',
+                    text: data.message,
+                    confirmButtonColor: '#38e07b',
+                    customClass: {
+                      popup: 'rounded-2xl',
+                      confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+                    },
+                  });
+                }
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Error al procesar la solicitud',
+                  confirmButtonColor: '#38e07b',
+                  customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+                  },
+                });
+              });
+          }
+        });
+      }
+
+      // Unoccupy reserved table function
+      function unoccupyTable(tableId) {
+        Swal.fire({
+          title: '¿Desocupar mesa?',
+          text: 'La mesa seguirá reservada pero se marcará como no ocupada',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#38e07b',
+          cancelButtonColor: '#d33',
+          confirmButtonText: 'Sí, desocupar',
+          cancelButtonText: 'Cancelar',
+          customClass: {
+            popup: 'rounded-2xl',
+            confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+            cancelButton: 'rounded-xl px-6 py-2.5 font-semibold',
+          },
+        }).then((result) => {
+          if (result.isConfirmed) {
+            fetch(`/admin/tables/${tableId}/mark-unoccupied`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  Swal.fire({
+                    icon: 'success',
+                    title: '¡Éxito!',
+                    text: data.message,
+                    confirmButtonColor: '#38e07b',
+                    customClass: {
+                      popup: 'rounded-2xl',
+                      confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+                    },
+                  }).then(() => {
+                    location.reload();
+                  });
+                } else {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'No se puede desocupar',
+                    text: data.message,
+                    confirmButtonColor: '#38e07b',
+                    customClass: {
+                      popup: 'rounded-2xl',
+                      confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+                    },
+                  });
+                }
+              })
+              .catch((error) => {
+                console.error('Error:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: 'Error al procesar la solicitud',
+                  confirmButtonColor: '#38e07b',
+                  customClass: {
+                    popup: 'rounded-2xl',
+                    confirmButton: 'rounded-xl px-6 py-2.5 font-semibold',
+                  },
+                });
+              });
+          }
+        });
       }
 
       document.addEventListener("keydown", function (event) {

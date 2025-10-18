@@ -503,6 +503,49 @@
                   </div>
                 </div>
 
+                <!-- Average Consumption Time -->
+                <div>
+                  <label
+                    for="averageConsumptionTimeMinutes"
+                    class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Tiempo Promedio de Consumo (minutos) *
+                  </label>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <input
+                        type="number"
+                        id="averageConsumptionTimeMinutes"
+                        th:field="*{averageConsumptionTimeMinutes}"
+                        min="30"
+                        max="480"
+                        required
+                        class="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
+                      />
+                      <p
+                        class="mt-1 text-sm text-red-600 dark:text-red-400"
+                        th:if="${#fields.hasErrors('averageConsumptionTimeMinutes')}"
+                        th:errors="*{averageConsumptionTimeMinutes}"
+                      ></p>
+                    </div>
+                    <div class="flex items-center">
+                      <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                        <div class="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+                          <span class="material-symbols-outlined">info</span>
+                          <div>
+                            <p class="text-sm font-semibold" th:text="${configuration.averageConsumptionTimeDisplay}">2 horas</p>
+                            <p class="text-xs">Tiempo estimado</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Este tiempo se usa para calcular el espacio entre reservaciones y validar disponibilidad de mesas. 
+                    Valor recomendado: 90-150 minutos. Mínimo: 30 min, Máximo: 480 min (8 horas).
+                  </p>
+                </div>
+
                 <!-- Work Days -->
                 <div>
                   <label

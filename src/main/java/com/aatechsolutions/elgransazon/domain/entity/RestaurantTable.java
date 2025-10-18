@@ -52,6 +52,10 @@ public class RestaurantTable implements Serializable {
     @Column(name = "comments", length = 500)
     private String comments;
 
+    @Column(name = "is_occupied", nullable = false)
+    @Builder.Default
+    private Boolean isOccupied = false;
+
     @Column(name = "created_by", length = 50)
     private String createdBy;
 
@@ -160,5 +164,22 @@ public class RestaurantTable implements Serializable {
      */
     public String getDisplayName() {
         return "Mesa #" + tableNumber;
+    }
+
+    /**
+     * Check if table is reserved but currently occupied
+     */
+    public boolean isReservedButOccupied() {
+        return this.status == TableStatus.RESERVED && this.isOccupied;
+    }
+
+    /**
+     * Get enhanced status display name including occupation status
+     */
+    public String getEnhancedStatusDisplayName() {
+        if (isReservedButOccupied()) {
+            return "Reservada (Ocupada)";
+        }
+        return getStatusDisplayName();
     }
 }

@@ -53,9 +53,8 @@ public class Employee implements Serializable {
     @Column(name = "contrasenia", nullable = false)
     private String contrasenia;
 
-    @NotBlank(message = "El teléfono es obligatorio")
     @Pattern(regexp = "^[0-9]{10}$", message = "El teléfono debe contener exactamente 10 dígitos sin espacios")
-    @Column(name = "telefono", nullable = false, length = 20)
+    @Column(name = "telefono", length = 20)
     private String telefono;
 
     @Column(name = "salario")

@@ -263,4 +263,81 @@ public class RestaurantTableController {
 
         return response;
     }
+
+    /**
+     * Mark reserved table as occupied (AJAX)
+     */
+    @PostMapping("/{id}/mark-occupied")
+    @ResponseBody
+    public Map<String, Object> markTableAsOccupied(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            String username = authentication.getName();
+            RestaurantTable table = tableService.markAsOccupied(id, username);
+            
+            response.put("success", true);
+            response.put("message", "Mesa marcada como ocupada exitosamente");
+            response.put("isOccupied", table.getIsOccupied());
+            response.put("status", table.getStatusDisplayName());
+            
+            log.info("Table {} marked as occupied by user: {}", id, username);
+        } catch (Exception e) {
+            log.error("Error marking table as occupied: {}", id, e);
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * Mark reserved table as unoccupied (AJAX)
+     */
+    @PostMapping("/{id}/mark-unoccupied")
+    @ResponseBody
+    public Map<String, Object> markTableAsUnoccupied(
+            @PathVariable Long id,
+            Authentication authentication) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            String username = authentication.getName();
+            RestaurantTable table = tableService.findByIdOrThrow(id);
+            
+            // Validate table is reserved
+            if (table.getStatus() != TableStatus.RESERVED) {
+                response.put("success", false);
+                response.put("message", "Solo se pueden desocupar mesas con estado RESERVADO");
+                return response;
+            }
+            
+            // Validate table is occupied
+            if (!table.getIsOccupied()) {
+                response.put("success", false);
+                response.put("message", "La mesa no está ocupada");
+                return response;
+            }
+            
+            // Mark as unoccupied
+            table.setIsOccupied(false);
+            table.setUpdatedBy(username);
+            RestaurantTable updated = tableService.save(table);
+            
+            response.put("success", true);
+            response.put("message", "Mesa marcada como no ocupada exitosamente");
+            response.put("isOccupied", updated.getIsOccupied());
+            response.put("status", updated.getStatusDisplayName());
+            
+            log.info("Table {} marked as unoccupied by user: {}", id, username);
+        } catch (Exception e) {
+            log.error("Error marking table as unoccupied: {}", id, e);
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
 }

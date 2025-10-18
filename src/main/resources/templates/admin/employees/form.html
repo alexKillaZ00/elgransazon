@@ -281,7 +281,6 @@
                         >phone</span
                       >
                       Teléfono
-                      <span class="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -289,7 +288,6 @@
                       id="telefono"
                       placeholder="1234567890"
                       pattern="[0-9]{10}"
-                      required
                       class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
                     />
                     <p
@@ -298,7 +296,7 @@
                       <span class="material-symbols-outlined text-sm"
                         >info</span
                       >
-                      Debe ser un número de 10 dígitos
+                      Opcional - Si se proporciona, debe ser un número de 10 dígitos
                     </p>
                     <p
                       th:if="${#fields.hasErrors('telefono')}"

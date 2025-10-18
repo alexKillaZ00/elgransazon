@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${isEdit ? 'Editar Reservación - El Gran Sazón' : 'Nueva Reservación - El Gran Sazón'}">Nueva Reservación - El Gran Sazón</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                light: "#F59E0B",
+                DEFAULT: "#D97706",
+                dark: "#B45309",
+              },
+              background: {
+                light: "#FEF3C7",
+                dark: "#1F2937",
+              },
+            },
+            fontFamily: {
+              display: ["Poppins", "sans-serif"],
+              handwriting: ["Satisfy", "cursive"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .sidebar-hidden {
+        transform: translateX(-100%);
+      }
+      .sidebar-visible {
+        transform: translateX(0);
+      }
+      @media (min-width: 1024px) {
+        .sidebar-hidden {
+          transform: translateX(0);
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gradient-to-br from-background-light to-gray-50 dark:from-background-dark dark:to-gray-900 font-display text-gray-800 dark:text-gray-200 overflow-hidden"
+  >
+    <div id="menuOverlay"></div>
+
+    <button
+      id="menuToggle"
+      class="fixed top-4 left-4 z-50 lg:hidden w-12 h-12 bg-white dark:bg-gray-900 rounded-xl shadow-lg flex items-center justify-center"
+    >
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+
+    <div class="flex h-screen overflow-hidden">
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="sidebar-hidden lg:sidebar-visible fixed lg:static inset-y-0 left-0 z-40 w-72 bg-white dark:bg-gray-900 shadow-2xl transition-transform duration-300 ease-in-out overflow-y-auto"
+      >
+        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+          <h1 class="text-3xl font-handwriting text-primary-dark">El Gran Sazón</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Panel de Administración</p>
+        </div>
+        <nav class="p-4 space-y-2">
+          <a href="/admin/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-primary-light/10 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <span>Dashboard</span>
+          </a>
+          <a href="/admin/tables" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-primary-light/10 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+            <span>Mesas</span>
+          </a>
+          <a href="/admin/reservations" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary-light/20 text-primary-dark transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span>Reservaciones</span>
+          </a>
+          <a href="/admin/employees" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-primary-light/10 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            <span>Empleados</span>
+          </a>
+          <a href="/logout" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 transition mt-8">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            <span>Cerrar Sesión</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-800">
+        <div class="container mx-auto px-4 py-8 lg:px-8">
+          <!-- Header -->
+          <div class="mb-8">
+            <div class="flex items-center gap-4 mb-4">
+              <a href="/admin/reservations" class="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+              </a>
+              <div>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white" th:text="${isEdit ? 'Editar Reservación' : 'Nueva Reservación'}">Nueva Reservación</h2>
+                <p class="text-gray-600 dark:text-gray-400">Complete el formulario para gestionar la reservación</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error/Success Messages -->
+          <div th:if="${errorMessage}" class="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border border-red-400 text-red-700 dark:text-red-300 rounded-lg">
+            <p th:text="${errorMessage}"></p>
+          </div>
+
+          <div th:if="${successMessage}" class="mb-6 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 text-green-700 dark:text-green-300 rounded-lg">
+            <p th:text="${successMessage}"></p>
+          </div>
+
+          <!-- Form -->
+          <form th:action="@{${isEdit ? '/admin/reservations/' + reservation.id : '/admin/reservations'}}" 
+                th:object="${reservation}" 
+                method="post" 
+                class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              <!-- Customer Name -->
+              <div>
+                <label for="customerName" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Nombre del Cliente <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="customerName"
+                  th:field="*{customerName}"
+                  required
+                  minlength="2"
+                  maxlength="100"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-light focus:border-transparent transition"
+                  placeholder="Ej: Juan Pérez"
+                />
+                <p th:if="${#fields.hasErrors('customerName')}" th:errors="*{customerName}" class="mt-1 text-sm text-red-600"></p>
+              </div>
+
+              <!-- Customer Phone -->
+              <div>
+                <label for="customerPhone" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Teléfono <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="tel"
+                  id="customerPhone"
+                  th:field="*{customerPhone}"
+                  required
+                  pattern="^[+]?[0-9\-\s()]{7,20}$"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-light focus:border-transparent transition"
+                  placeholder="Ej: 555-1234"
+                />
+                <p th:if="${#fields.hasErrors('customerPhone')}" th:errors="*{customerPhone}" class="mt-1 text-sm text-red-600"></p>
+              </div>
+
+              <!-- Customer Email -->
+              <div>
+                <label for="customerEmail" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Correo Electrónico
+                </label>
+                <input
+                  type="email"
+                  id="customerEmail"
+                  th:field="*{customerEmail}"
+                  maxlength="100"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-light focus:border-transparent transition"
+                  placeholder="Ej: juan@email.com"
+                />
+                <p th:if="${#fields.hasErrors('customerEmail')}" th:errors="*{customerEmail}" class="mt-1 text-sm text-red-600"></p>
+              </div>
+
+              <!-- Number of Guests -->
+              <div>
+                <label for="numberOfGuests" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Número de Comensales <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="numberOfGuests"
+                  th:field="*{numberOfGuests}"
+                  required
+                  min="1"
+                  max="50"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-light focus:border-transparent transition"
+                  placeholder="Ej: 4"
+                />
+                <p th:if="${#fields.hasErrors('numberOfGuests')}" th:errors="*{numberOfGuests}" class="mt-1 text-sm text-red-600"></p>
+              </div>
+
+              <!-- Reservation Date -->
+              <div>
+                <label for="reservationDate" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Fecha de Reservación <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="reservationDate"
+                  th:field="*{reservationDate}"
+                  required
+                  th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-light focus:border-transparent transition"
+                />
+                <p th:if="${#fields.hasErrors('reservationDate')}" th:errors="*{reservationDate}" class="mt-1 text-sm text-red-600"></p>
+              </div>
+
+              <!-- Reservation Time -->
+              <div>
+                <label for="reservationTime" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Hora de Reservación <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="time"
+                  id="reservationTime"
+                  th:field="*{reservationTime}"
+                  required
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-light focus:border-transparent transition"
+                />
+                <p th:if="${#fields.hasErrors('reservationTime')}" th:errors="*{reservationTime}" class="mt-1 text-sm text-red-600"></p>
+                <p class="mt-1 text-xs text-gray-500">La hora debe estar dentro del horario del restaurante</p>
+              </div>
+
+              <!-- Table Selection -->
+              <div>
+                <label for="restaurantTable" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Mesa <span class="text-red-500">*</span>
+                </label>
+                <select
+                  id="restaurantTable"
+                  th:field="*{restaurantTable.id}"
+                  required
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-light focus:border-transparent transition"
+                >
+                  <option value="">Seleccione una mesa</option>
+                  <option th:each="table : ${tables}" 
+                          th:value="${table.id}" 
+                          th:text="${'Mesa #' + table.tableNumber + ' - Capacidad: ' + table.capacity + ' personas - ' + table.statusDisplayName}"
+                          th:selected="${reservation.restaurantTable != null && reservation.restaurantTable.id == table.id}">
+                  </option>
+                </select>
+                <p th:if="${#fields.hasErrors('restaurantTable')}" th:errors="*{restaurantTable}" class="mt-1 text-sm text-red-600"></p>
+              </div>
+
+              <!-- Special Requests -->
+              <div class="md:col-span-2">
+                <label for="specialRequests" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                  Peticiones Especiales
+                </label>
+                <textarea
+                  id="specialRequests"
+                  th:field="*{specialRequests}"
+                  rows="3"
+                  maxlength="500"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-light focus:border-transparent transition"
+                  placeholder="Ej: Mesa cerca de la ventana, cumpleaños, alergias, etc."
+                ></textarea>
+                <p th:if="${#fields.hasErrors('specialRequests')}" th:errors="*{specialRequests}" class="mt-1 text-sm text-red-600"></p>
+                <p class="mt-1 text-xs text-gray-500">Máximo 500 caracteres</p>
+              </div>
+
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <a href="/admin/reservations" 
+                 class="px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+                Cancelar
+              </a>
+              <button
+                type="submit"
+                class="px-6 py-3 bg-gradient-to-r from-primary-light to-primary-dark text-white rounded-lg hover:shadow-lg transition transform hover:scale-105"
+              >
+                <span th:text="${isEdit ? 'Actualizar Reservación' : 'Crear Reservación'}">Crear Reservación</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // Menu toggle functionality
+      const menuToggle = document.getElementById("menuToggle");
+      const sidebar = document.getElementById("sidebar");
+      const menuOverlay = document.getElementById("menuOverlay");
+
+      menuToggle?.addEventListener("click", () => {
+        sidebar.classList.toggle("sidebar-hidden");
+        sidebar.classList.toggle("sidebar-visible");
+        menuOverlay.classList.toggle("fixed");
+        menuOverlay.classList.toggle("inset-0");
+        menuOverlay.classList.toggle("bg-black/50");
+        menuOverlay.classList.toggle("z-30");
+        menuOverlay.classList.toggle("lg:hidden");
+      });
+
+      menuOverlay?.addEventListener("click", () => {
+        sidebar.classList.add("sidebar-hidden");
+        sidebar.classList.remove("sidebar-visible");
+        menuOverlay.classList.remove("fixed", "inset-0", "bg-black/50", "z-30", "lg:hidden");
+      });
+
+      // Date validation - minimum today
+      const dateInput = document.getElementById('reservationDate');
+      if (dateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+      }
+
+      // Character counter for special requests
+      const specialRequestsTextarea = document.getElementById('specialRequests');
+      if (specialRequestsTextarea) {
+        const maxLength = 500;
+        const counterDiv = document.createElement('div');
+        counterDiv.className = 'text-xs text-gray-500 text-right mt-1';
+        specialRequestsTextarea.parentElement.appendChild(counterDiv);
+
+        function updateCounter() {
+          const remaining = maxLength - specialRequestsTextarea.value.length;
+          counterDiv.textContent = `${remaining} caracteres restantes`;
+          if (remaining < 50) {
+            counterDiv.className = 'text-xs text-orange-500 text-right mt-1';
+          } else {
+            counterDiv.className = 'text-xs text-gray-500 text-right mt-1';
+          }
+        }
+
+        specialRequestsTextarea.addEventListener('input', updateCounter);
+        updateCounter();
+      }
+
+      // Success/Error message display using SweetAlert
+      const urlParams = new URLSearchParams(window.location.search);
+      const success = urlParams.get('success');
+      const error = urlParams.get('error');
+
+      if (success) {
+        Swal.fire({
+          icon: 'success',
+          title: '¡Éxito!',
+          text: decodeURIComponent(success),
+          confirmButtonColor: '#D97706'
+        });
+      }
+
+      if (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: decodeURIComponent(error),
+          confirmButtonColor: '#D97706'
+        });
+      }
+    </script>
+  </body>
+</html>

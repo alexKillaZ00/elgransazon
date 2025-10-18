@@ -1,14 +1,19 @@
 package com.aatechsolutions.elgransazon.application.service;
 
+import com.aatechsolutions.elgransazon.domain.entity.Reservation;
 import com.aatechsolutions.elgransazon.domain.entity.RestaurantTable;
+import com.aatechsolutions.elgransazon.domain.entity.SystemConfiguration;
 import com.aatechsolutions.elgransazon.domain.entity.TableStatus;
+import com.aatechsolutions.elgransazon.domain.repository.ReservationRepository;
 import com.aatechsolutions.elgransazon.domain.repository.RestaurantTableRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +27,8 @@ import java.util.Optional;
 public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     private final RestaurantTableRepository tableRepository;
+    private final ReservationRepository reservationRepository;
+    private final SystemConfigurationService systemConfigurationService;
 
     @Override
     public List<RestaurantTable> findAll() {
@@ -194,5 +201,87 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     public List<String> getDistinctLocations() {
         log.debug("Fetching distinct locations");
         return tableRepository.findDistinctLocations();
+    }
+
+    @Override
+    public RestaurantTable findByIdOrThrow(Long id) {
+        return findById(id)
+                .orElseThrow(() -> {
+                    String error = "Mesa no encontrada con ID: " + id;
+                    log.error(error);
+                    return new IllegalArgumentException(error);
+                });
+    }
+
+    @Override
+    @Transactional
+    public RestaurantTable save(RestaurantTable table) {
+        log.debug("Saving restaurant table: {}", table.getId());
+        return tableRepository.save(table);
+    }
+
+    @Override
+    @Transactional
+    public RestaurantTable markAsOccupied(Long id, String username) {
+        log.info("Attempting to mark table {} as occupied by user: {}", id, username);
+
+        RestaurantTable table = findByIdOrThrow(id);
+
+        // Table must be in RESERVED status
+        if (table.getStatus() != TableStatus.RESERVED) {
+            String error = "Solo se puede ocupar una mesa que esté reservada. Estado actual: " + 
+                    table.getStatusDisplayName();
+            log.error(error);
+            throw new IllegalStateException(error);
+        }
+
+        // Get system configuration for average consumption time
+        SystemConfiguration config = systemConfigurationService.getConfiguration();
+        Integer avgConsumptionMinutes = config.getAverageConsumptionTimeMinutes();
+        
+        // Get current date and time
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+        
+        // Find next reservation for this table (today or future)
+        Optional<Reservation> nextReservationOpt = reservationRepository.findNextReservationForTable(
+                table.getId(), 
+                today, 
+                now
+        );
+        
+        // If there's a next reservation, validate there's enough time
+        if (nextReservationOpt.isPresent()) {
+            Reservation nextReservation = nextReservationOpt.get();
+            LocalTime nextReservationTime = nextReservation.getReservationTime();
+            LocalTime estimatedEndTime = now.plusMinutes(avgConsumptionMinutes);
+            
+            // Check if estimated end time is after next reservation time
+            if (estimatedEndTime.isAfter(nextReservationTime)) {
+                String error = String.format(
+                    "No hay tiempo suficiente antes de la próxima reservación. " +
+                    "Próxima reservación: %s. Tiempo estimado de consumo: %d minutos. " +
+                    "Hora actual: %s. Hora estimada de finalización: %s.",
+                    nextReservationTime.toString(),
+                    avgConsumptionMinutes,
+                    now.toString(),
+                    estimatedEndTime.toString()
+                );
+                log.error(error);
+                throw new IllegalStateException(error);
+            }
+            
+            log.info("Next reservation at {} - Estimated end time: {} - Validation passed", 
+                    nextReservationTime, estimatedEndTime);
+        }
+
+        // Mark as occupied
+        table.setIsOccupied(true);
+        table.setUpdatedBy(username);
+        table.setUpdatedAt(LocalDateTime.now());
+
+        RestaurantTable updated = tableRepository.save(table);
+        log.info("Table {} marked as occupied successfully", id);
+        return updated;
     }
 }
