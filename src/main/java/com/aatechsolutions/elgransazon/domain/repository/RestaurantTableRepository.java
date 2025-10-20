@@ -42,6 +42,11 @@ public interface RestaurantTableRepository extends JpaRepository<RestaurantTable
     long countByStatus(TableStatus status);
 
     /**
+     * Count tables by status and occupied flag
+     */
+    long countByStatusAndIsOccupied(TableStatus status, Boolean isOccupied);
+
+    /**
      * Check if table number exists
      */
     boolean existsByTableNumber(Integer tableNumber);

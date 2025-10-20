@@ -5,7 +5,6 @@ import com.aatechsolutions.elgransazon.domain.entity.DayOfWeek;
 import com.aatechsolutions.elgransazon.domain.entity.PaymentMethodType;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.Map;
 
 /**
@@ -43,11 +42,6 @@ public interface SystemConfigurationService {
      * Check if configuration exists
      */
     boolean configurationExists();
-
-    /**
-     * Update work days
-     */
-    SystemConfiguration updateWorkDays(Set<DayOfWeek> workDays);
 
     /**
      * Update payment methods status

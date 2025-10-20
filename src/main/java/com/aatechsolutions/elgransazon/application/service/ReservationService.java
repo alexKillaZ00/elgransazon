@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -313,22 +314,36 @@ public class ReservationService {
      * Validate reservation business rules
      */
     private void validateReservation(Reservation reservation, Long excludeId) {
-        // 1. Validate date is today or future
+        // 1. Validate table is not out of service
+        validateTableAvailability(reservation.getRestaurantTable());
+
+        // 2. Validate date is today or future
         validateReservationDate(reservation.getReservationDate());
 
-        // 2. Validate time is within business hours
+        // 3. Validate time is within business hours
         validateReservationTime(reservation.getReservationDate(), reservation.getReservationTime());
 
-        // 3. Validate table capacity
+        // 4. Validate table capacity
         validateTableCapacity(reservation.getRestaurantTable(), reservation.getNumberOfGuests());
 
-        // 4. Validate no overlapping reservations
+        // 5. Validate no overlapping reservations
         validateNoOverlappingReservations(
                 reservation.getRestaurantTable().getId(),
                 reservation.getReservationDate(),
                 reservation.getReservationTime(),
                 excludeId
         );
+    }
+
+    /**
+     * Validate table is available for reservation (not OUT_OF_SERVICE)
+     */
+    private void validateTableAvailability(RestaurantTable table) {
+        if (table.getStatus() == TableStatus.OUT_OF_SERVICE) {
+            throw new IllegalArgumentException(
+                    String.format("La mesa %s está fuera de servicio y no se puede reservar",
+                            table.getDisplayName()));
+        }
     }
 
     /**
@@ -347,6 +362,19 @@ public class ReservationService {
      */
     private void validateReservationTime(LocalDate reservationDate, LocalTime reservationTime) {
         SystemConfiguration config = systemConfigurationService.getConfiguration();
+
+        // 0. If reservation is for today, check that time is not in the past
+        LocalDate today = LocalDate.now();
+        if (reservationDate.equals(today)) {
+            LocalTime currentTime = LocalTime.now();
+            if (reservationTime.isBefore(currentTime) || reservationTime.equals(currentTime)) {
+                DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+                throw new IllegalArgumentException(
+                        String.format("No se puede crear una reservación en el pasado. La hora actual es %s y la hora seleccionada es %s",
+                                currentTime.format(timeFormatter),
+                                reservationTime.format(timeFormatter)));
+            }
+        }
 
         // Convert LocalDate to DayOfWeek
         java.time.DayOfWeek javaDayOfWeek = reservationDate.getDayOfWeek();
@@ -417,21 +445,35 @@ public class ReservationService {
         SystemConfiguration config = systemConfigurationService.getConfiguration();
         Integer avgConsumption = config.getAverageConsumptionTimeMinutes();
 
+        log.debug("=== Validating overlapping reservations ===");
+        log.debug("Table ID: {}", tableId);
+        log.debug("Date: {}", date);
+        log.debug("Start time: {}", startTime);
+        log.debug("Avg consumption: {} minutes", avgConsumption);
+
         // Calculate end time
         LocalTime endTime = startTime.plusMinutes(avgConsumption);
+        log.debug("Calculated end time: {}", endTime);
 
         // Convert average consumption to seconds for the native query
         Integer avgConsumptionSeconds = avgConsumption * 60;
+        log.debug("Avg consumption seconds: {}", avgConsumptionSeconds);
 
         Long overlapCount = reservationRepository.countOverlappingReservations(
                 tableId, date, startTime, endTime, avgConsumptionSeconds, excludeId);
 
+        log.debug("Overlap count: {}", overlapCount);
+
         if (overlapCount > 0) {
+            log.warn("Overlap detected! Count: {}, Config time: {} min ({})", 
+                overlapCount, avgConsumption, config.getAverageConsumptionTimeDisplay());
             throw new IllegalArgumentException(
                     "Ya existe una reservación para esta mesa en el horario solicitado. " +
                     "Debe haber al menos " + config.getAverageConsumptionTimeDisplay() + 
                     " entre reservaciones.");
         }
+        
+        log.debug("=== Validation passed - No overlaps detected ===");
     }
 
     /**

@@ -51,6 +51,9 @@ public class ReservationController {
             reservations = reservationService.findAllOrderByDateTimeDesc();
         }
 
+        // Get today's reservations
+        List<Reservation> todayReservations = reservationService.findTodayReservations();
+
         // Statistics
         long totalCount = reservations.size();
         long todayCount = reservationService.countTodayReservations();
@@ -62,6 +65,7 @@ public class ReservationController {
         long noShowCount = reservationService.countByStatus(ReservationStatus.NO_SHOW);
 
         model.addAttribute("reservations", reservations);
+        model.addAttribute("todayReservations", todayReservations);
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("todayCount", todayCount);
         model.addAttribute("todayActiveCount", todayActiveCount);
@@ -87,7 +91,7 @@ public class ReservationController {
         Reservation reservation = new Reservation();
         reservation.setReservationDate(LocalDate.now());
 
-        List<RestaurantTable> tables = tableService.findAllOrderByTableNumber();
+        List<RestaurantTable> tables = tableService.findReservableTables();
 
         model.addAttribute("reservation", reservation);
         model.addAttribute("tables", tables);
@@ -113,7 +117,7 @@ public class ReservationController {
                 return "redirect:/admin/reservations";
             }
 
-            List<RestaurantTable> tables = tableService.findAllOrderByTableNumber();
+            List<RestaurantTable> tables = tableService.findReservableTables();
 
             model.addAttribute("reservation", reservation);
             model.addAttribute("tables", tables);
@@ -142,7 +146,7 @@ public class ReservationController {
 
         if (bindingResult.hasErrors()) {
             log.warn("Validation errors creating reservation: {}", bindingResult.getAllErrors());
-            List<RestaurantTable> tables = tableService.findAllOrderByTableNumber();
+            List<RestaurantTable> tables = tableService.findReservableTables();
             model.addAttribute("tables", tables);
             model.addAttribute("statuses", ReservationStatus.values());
             model.addAttribute("isEdit", false);
@@ -158,7 +162,7 @@ public class ReservationController {
         } catch (Exception e) {
             log.error("Error creating reservation", e);
             model.addAttribute("errorMessage", e.getMessage());
-            List<RestaurantTable> tables = tableService.findAllOrderByTableNumber();
+            List<RestaurantTable> tables = tableService.findReservableTables();
             model.addAttribute("tables", tables);
             model.addAttribute("statuses", ReservationStatus.values());
             model.addAttribute("isEdit", false);
@@ -181,7 +185,7 @@ public class ReservationController {
 
         if (bindingResult.hasErrors()) {
             log.warn("Validation errors updating reservation: {}", bindingResult.getAllErrors());
-            List<RestaurantTable> tables = tableService.findAllOrderByTableNumber();
+            List<RestaurantTable> tables = tableService.findReservableTables();
             model.addAttribute("reservation", reservation);
             model.addAttribute("tables", tables);
             model.addAttribute("statuses", ReservationStatus.values());
@@ -198,7 +202,7 @@ public class ReservationController {
         } catch (Exception e) {
             log.error("Error updating reservation: {}", id, e);
             model.addAttribute("errorMessage", e.getMessage());
-            List<RestaurantTable> tables = tableService.findAllOrderByTableNumber();
+            List<RestaurantTable> tables = tableService.findReservableTables();
             model.addAttribute("reservation", reservation);
             model.addAttribute("tables", tables);
             model.addAttribute("statuses", ReservationStatus.values());
@@ -335,6 +339,83 @@ public class ReservationController {
             log.debug("Retrieved details for reservation: {}", id);
         } catch (Exception e) {
             log.error("Error getting reservation details: {}", id, e);
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * Get reservations by date (AJAX for calendar)
+     */
+    @GetMapping("/api/by-date")
+    @ResponseBody
+    public Map<String, Object> getReservationsByDate(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            List<Reservation> reservations = reservationService.findByDate(date);
+            
+            List<Map<String, Object>> reservationList = new ArrayList<>();
+            for (Reservation reservation : reservations) {
+                Map<String, Object> resData = new HashMap<>();
+                resData.put("id", reservation.getId());
+                resData.put("customerName", reservation.getCustomerName());
+                resData.put("customerPhone", reservation.getCustomerPhone());
+                resData.put("numberOfGuests", reservation.getNumberOfGuests());
+                resData.put("reservationTime", reservation.getFormattedReservationTime());
+                resData.put("table", reservation.getTableDisplayName());
+                resData.put("status", reservation.getStatusDisplayName());
+                resData.put("statusName", reservation.getStatus().name());
+                reservationList.add(resData);
+            }
+
+            response.put("success", true);
+            response.put("date", date.toString());
+            response.put("reservations", reservationList);
+            response.put("count", reservationList.size());
+
+            log.debug("Retrieved {} reservations for date: {}", reservationList.size(), date);
+        } catch (Exception e) {
+            log.error("Error getting reservations by date: {}", date, e);
+            response.put("success", false);
+            response.put("message", e.getMessage());
+        }
+
+        return response;
+    }
+
+    /**
+     * Get reservation counts by date range (AJAX for calendar)
+     */
+    @GetMapping("/api/counts-by-month")
+    @ResponseBody
+    public Map<String, Object> getReservationCountsByMonth(
+            @RequestParam int year,
+            @RequestParam int month) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            LocalDate startDate = LocalDate.of(year, month, 1);
+            LocalDate endDate = startDate.plusMonths(1).minusDays(1);
+
+            List<Reservation> reservations = reservationService.findByDateRange(startDate, endDate);
+
+            // Group reservations by date
+            Map<String, Integer> countsByDate = new HashMap<>();
+            for (Reservation reservation : reservations) {
+                String dateKey = reservation.getReservationDate().toString();
+                countsByDate.put(dateKey, countsByDate.getOrDefault(dateKey, 0) + 1);
+            }
+
+            response.put("success", true);
+            response.put("counts", countsByDate);
+
+            log.debug("Retrieved reservation counts for {}-{}", year, month);
+        } catch (Exception e) {
+            log.error("Error getting reservation counts: {}-{}", year, month, e);
             response.put("success", false);
             response.put("message", e.getMessage());
         }

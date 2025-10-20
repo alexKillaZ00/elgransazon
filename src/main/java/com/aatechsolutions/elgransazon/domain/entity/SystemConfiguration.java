@@ -38,7 +38,7 @@ public class SystemConfiguration implements Serializable {
     @Column(name = "slogan", length = 255)
     private String slogan;
 
-    @Pattern(regexp = "^https?://.*", message = "Logo URL must start with http:// or https://")
+    @Pattern(regexp = "^(https?://.*)?$", message = "Logo URL must start with http:// or https://")
     @Size(max = 500, message = "Logo URL cannot exceed 500 characters")
     @Column(name = "logo_url", length = 500)
     private String logoUrl;
@@ -71,14 +71,6 @@ public class SystemConfiguration implements Serializable {
     @Column(name = "average_consumption_time_minutes", nullable = false)
     @Builder.Default
     private Integer averageConsumptionTimeMinutes = 120; // Default: 2 hours
-
-    // Work days stored as comma-separated enum values
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "system_work_days", joinColumns = @JoinColumn(name = "system_configuration_id"))
-    @Enumerated(EnumType.STRING)
-    @Column(name = "day_of_week", nullable = false)
-    @Builder.Default
-    private Set<DayOfWeek> workDays = new HashSet<>();
 
     // Payment methods with enable/disable status
     @ElementCollection(fetch = FetchType.EAGER)
@@ -157,8 +149,10 @@ public class SystemConfiguration implements Serializable {
     }
 
     // Helper method to check if a day is a work day
+    // A day is a work day if it has business hours and is NOT closed
     public boolean isWorkDay(DayOfWeek day) {
-        return workDays.contains(day);
+        return businessHours.stream()
+                .anyMatch(hours -> hours.getDayOfWeek().equals(day) && !hours.getIsClosed());
     }
 
     // Helper method to check if a payment method is enabled
@@ -174,8 +168,11 @@ public class SystemConfiguration implements Serializable {
     }
 
     // Helper method to get work days sorted
+    // Returns all days that are NOT closed, sorted by ordinal
     public List<DayOfWeek> getSortedWorkDays() {
-        return workDays.stream()
+        return businessHours.stream()
+                .filter(hours -> !hours.getIsClosed())
+                .map(BusinessHours::getDayOfWeek)
                 .sorted(Comparator.comparingInt(Enum::ordinal))
                 .toList();
     }

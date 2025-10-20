@@ -43,9 +43,15 @@ public class SystemConfigurationController {
         List<BusinessHours> businessHours = businessHoursService.getAllBusinessHours();
         List<SocialNetwork> socialNetworks = socialNetworkService.getAllSocialNetworks();
         
+        // Ensure businessHoursMap is never null
+        Map<DayOfWeek, BusinessHours> businessHoursMap = createBusinessHoursMap(businessHours);
+        if (businessHoursMap == null) {
+            businessHoursMap = new HashMap<>();
+        }
+        
         model.addAttribute("configuration", config);
         model.addAttribute("businessHours", businessHours);
-        model.addAttribute("businessHoursMap", createBusinessHoursMap(businessHours));
+        model.addAttribute("businessHoursMap", businessHoursMap);
         model.addAttribute("socialNetworks", socialNetworks);
         model.addAttribute("allDays", DayOfWeek.values());
         model.addAttribute("paymentMethodTypes", PaymentMethodType.values());
@@ -60,7 +66,6 @@ public class SystemConfigurationController {
     public String updateConfiguration(
             @Valid @ModelAttribute("configuration") SystemConfiguration configuration,
             BindingResult bindingResult,
-            @RequestParam(value = "workDays", required = false) List<String> workDays,
             @RequestParam(value = "paymentCash", required = false) Boolean paymentCash,
             @RequestParam(value = "paymentCreditCard", required = false) Boolean paymentCreditCard,
             @RequestParam(value = "paymentDebitCard", required = false) Boolean paymentDebitCard,
@@ -68,10 +73,25 @@ public class SystemConfigurationController {
             Model model) {
 
         log.info("Processing system configuration update");
+        log.debug("Received averageConsumptionTimeMinutes: {}", configuration.getAverageConsumptionTimeMinutes());
 
         if (bindingResult.hasErrors()) {
             log.warn("Validation errors on configuration update");
-            model.addAttribute("businessHours", businessHoursService.getAllBusinessHours());
+            log.warn("Total errors: {}", bindingResult.getErrorCount());
+            bindingResult.getFieldErrors().forEach(error -> 
+                log.warn("Field '{}' has error: {} (rejected value: {})", 
+                    error.getField(), 
+                    error.getDefaultMessage(), 
+                    error.getRejectedValue())
+            );
+            List<BusinessHours> businessHoursList = businessHoursService.getAllBusinessHours();
+            Map<DayOfWeek, BusinessHours> businessHoursMap = createBusinessHoursMap(businessHoursList);
+            if (businessHoursMap == null) {
+                businessHoursMap = new HashMap<>();
+            }
+            
+            model.addAttribute("businessHours", businessHoursList);
+            model.addAttribute("businessHoursMap", businessHoursMap);
             model.addAttribute("socialNetworks", socialNetworkService.getAllSocialNetworks());
             model.addAttribute("allDays", DayOfWeek.values());
             model.addAttribute("paymentMethodTypes", PaymentMethodType.values());
@@ -79,17 +99,6 @@ public class SystemConfigurationController {
         }
 
         try {
-            // Update work days
-            if (workDays != null && !workDays.isEmpty()) {
-                Set<DayOfWeek> workDaysSet = new HashSet<>();
-                for (String day : workDays) {
-                    workDaysSet.add(DayOfWeek.valueOf(day));
-                }
-                configuration.setWorkDays(workDaysSet);
-            } else {
-                configuration.setWorkDays(new HashSet<>());
-            }
-
             // Update payment methods
             Map<PaymentMethodType, Boolean> paymentMethods = new HashMap<>();
             paymentMethods.put(PaymentMethodType.CASH, paymentCash != null && paymentCash);
@@ -105,8 +114,15 @@ public class SystemConfigurationController {
 
         } catch (Exception e) {
             log.error("Error updating system configuration: {}", e.getMessage());
+            List<BusinessHours> businessHoursList = businessHoursService.getAllBusinessHours();
+            Map<DayOfWeek, BusinessHours> businessHoursMap = createBusinessHoursMap(businessHoursList);
+            if (businessHoursMap == null) {
+                businessHoursMap = new HashMap<>();
+            }
+            
             model.addAttribute("errorMessage", "Error al actualizar la configuración: " + e.getMessage());
-            model.addAttribute("businessHours", businessHoursService.getAllBusinessHours());
+            model.addAttribute("businessHours", businessHoursList);
+            model.addAttribute("businessHoursMap", businessHoursMap);
             model.addAttribute("socialNetworks", socialNetworkService.getAllSocialNetworks());
             model.addAttribute("allDays", DayOfWeek.values());
             model.addAttribute("paymentMethodTypes", PaymentMethodType.values());
@@ -125,9 +141,8 @@ public class SystemConfigurationController {
         log.info("Processing business hours update");
 
         try {
-            SystemConfiguration config = configurationService.getConfiguration();
-            
-            for (DayOfWeek day : config.getWorkDays()) {
+            // Update business hours for ALL days (not just work days)
+            for (DayOfWeek day : DayOfWeek.values()) {
                 String dayName = day.name();
                 String openTimeStr = allParams.get("openTime_" + dayName);
                 String closeTimeStr = allParams.get("closeTime_" + dayName);
@@ -140,6 +155,9 @@ public class SystemConfigurationController {
                     LocalTime closeTime = LocalTime.parse(closeTimeStr);
                     
                     businessHoursService.updateBusinessHoursForDay(day, openTime, closeTime, isClosed);
+                } else if (isClosed) {
+                    // If marked as closed, set default times but mark as closed
+                    businessHoursService.updateBusinessHoursForDay(day, LocalTime.of(8, 0), LocalTime.of(22, 0), true);
                 }
             }
 

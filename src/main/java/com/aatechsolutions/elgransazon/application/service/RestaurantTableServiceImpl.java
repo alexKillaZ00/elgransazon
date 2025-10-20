@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -164,6 +165,15 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     }
 
     @Override
+    public List<RestaurantTable> findReservableTables() {
+        log.debug("Finding tables that can be reserved (excluding OUT_OF_SERVICE)");
+        return tableRepository.findAll().stream()
+                .filter(table -> table.getStatus() != TableStatus.OUT_OF_SERVICE)
+                .sorted((t1, t2) -> t1.getTableNumber().compareTo(t2.getTableNumber()))
+                .toList();
+    }
+
+    @Override
     public List<RestaurantTable> findByLocation(String location) {
         log.debug("Finding tables by location: {}", location);
         return tableRepository.findByLocation(location);
@@ -179,6 +189,20 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     public long countByStatus(TableStatus status) {
         log.debug("Counting tables by status: {}", status);
         return tableRepository.countByStatus(status);
+    }
+
+    @Override
+    public long countAllOccupiedTables() {
+        log.debug("Counting all occupied tables (OCCUPIED status + RESERVED with isOccupied=true)");
+        long occupiedStatus = tableRepository.countByStatus(TableStatus.OCCUPIED);
+        long reservedOccupied = tableRepository.countByStatusAndIsOccupied(TableStatus.RESERVED, true);
+        return occupiedStatus + reservedOccupied;
+    }
+
+    @Override
+    public long countReservedOnly() {
+        log.debug("Counting reserved tables that are NOT occupied");
+        return tableRepository.countByStatusAndIsOccupied(TableStatus.RESERVED, false);
     }
 
     @Override
@@ -258,14 +282,15 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
             
             // Check if estimated end time is after next reservation time
             if (estimatedEndTime.isAfter(nextReservationTime)) {
+                DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
                 String error = String.format(
                     "No hay tiempo suficiente antes de la próxima reservación. " +
                     "Próxima reservación: %s. Tiempo estimado de consumo: %d minutos. " +
                     "Hora actual: %s. Hora estimada de finalización: %s.",
-                    nextReservationTime.toString(),
+                    nextReservationTime.format(timeFormatter),
                     avgConsumptionMinutes,
-                    now.toString(),
-                    estimatedEndTime.toString()
+                    now.format(timeFormatter),
+                    estimatedEndTime.format(timeFormatter)
                 );
                 log.error(error);
                 throw new IllegalStateException(error);

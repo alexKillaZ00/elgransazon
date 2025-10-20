@@ -57,6 +57,11 @@ public interface RestaurantTableService {
     List<RestaurantTable> findAvailableTables();
 
     /**
+     * Find tables that can be reserved (excluding OUT_OF_SERVICE)
+     */
+    List<RestaurantTable> findReservableTables();
+
+    /**
      * Find tables by location
      */
     List<RestaurantTable> findByLocation(String location);
@@ -70,6 +75,16 @@ public interface RestaurantTableService {
      * Count tables by status
      */
     long countByStatus(TableStatus status);
+
+    /**
+     * Count all occupied tables (status=OCCUPIED + status=RESERVED with isOccupied=true)
+     */
+    long countAllOccupiedTables();
+
+    /**
+     * Count reserved tables that are NOT occupied (isOccupied = false)
+     */
+    long countReservedOnly();
 
     /**
      * Count all tables

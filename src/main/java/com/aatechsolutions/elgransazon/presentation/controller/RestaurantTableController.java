@@ -40,8 +40,8 @@ public class RestaurantTableController {
 
         long totalCount = tableService.countAll();
         long availableCount = tableService.countByStatus(TableStatus.AVAILABLE);
-        long occupiedCount = tableService.countByStatus(TableStatus.OCCUPIED);
-        long reservedCount = tableService.countByStatus(TableStatus.RESERVED);
+        long occupiedCount = tableService.countAllOccupiedTables(); // OCCUPIED + RESERVED con isOccupied=true
+        long reservedCount = tableService.countByStatus(TableStatus.RESERVED); // TODAS las RESERVED (ocupadas o no)
         long outOfServiceCount = tableService.countByStatus(TableStatus.OUT_OF_SERVICE);
 
         model.addAttribute("tables", tables);
@@ -246,6 +246,7 @@ public class RestaurantTableController {
             tableData.put("location", table.getLocationDisplay());
             tableData.put("status", table.getStatus().name());
             tableData.put("statusDisplay", table.getStatusDisplayName());
+            tableData.put("isOccupied", table.getIsOccupied());
             tableData.put("comments", table.getComments() != null ? table.getComments() : "Sin comentarios");
             tableData.put("createdBy", table.getCreatedBy() != null ? table.getCreatedBy() : "Desconocido");
             tableData.put("updatedBy", table.getUpdatedBy() != null ? table.getUpdatedBy() : "Desconocido");
