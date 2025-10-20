@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Implementation of BusinessHoursService
@@ -52,9 +51,6 @@ public class BusinessHoursServiceImpl implements BusinessHoursService {
     @Override
     public BusinessHours saveBusinessHours(BusinessHours businessHours) {
         log.info("Saving business hours for day: {}", businessHours.getDayOfWeek());
-        
-        // Validate that the day is a work day
-        validateDayIsWorkDay(businessHours.getDayOfWeek());
         
         // Get system configuration
         SystemConfiguration config = configurationService.getConfiguration();
@@ -117,8 +113,6 @@ public class BusinessHoursServiceImpl implements BusinessHoursService {
     public BusinessHours updateBusinessHoursForDay(DayOfWeek day, LocalTime openTime, LocalTime closeTime, Boolean isClosed) {
         log.info("Updating business hours for day: {}", day);
         
-        validateDayIsWorkDay(day);
-        
         SystemConfiguration config = configurationService.getConfiguration();
         Optional<BusinessHours> existingHours = businessHoursRepository
                 .findBySystemConfigurationIdAndDayOfWeek(config.getId(), day);
@@ -164,29 +158,31 @@ public class BusinessHoursServiceImpl implements BusinessHoursService {
 
     @Override
     public void validateBusinessHoursWithWorkDays(List<BusinessHours> businessHoursList) {
-        log.debug("Validating business hours with work days");
+        log.debug("Validating business hours list");
         
-        SystemConfiguration config = configurationService.getConfiguration();
-        Set<DayOfWeek> workDays = config.getWorkDays();
-        
+        // Validate that all business hours have required data
         for (BusinessHours hours : businessHoursList) {
-            if (!workDays.contains(hours.getDayOfWeek())) {
-                throw new IllegalArgumentException(
-                        "El día " + hours.getDayOfWeek().getDisplayName() + 
-                        " no es un día laboral del restaurante"
-                );
+            if (hours.getDayOfWeek() == null) {
+                throw new IllegalArgumentException("El día de la semana es requerido");
+            }
+            
+            // If not closed, validate times
+            if (!hours.getIsClosed()) {
+                if (hours.getOpenTime() == null || hours.getCloseTime() == null) {
+                    throw new IllegalArgumentException(
+                        "Para días abiertos, debe especificar hora de apertura y cierre"
+                    );
+                }
+                
+                if (hours.getOpenTime().isAfter(hours.getCloseTime()) || 
+                    hours.getOpenTime().equals(hours.getCloseTime())) {
+                    throw new IllegalArgumentException(
+                        "La hora de apertura debe ser anterior a la hora de cierre"
+                    );
+                }
             }
         }
-    }
-
-    /**
-     * Validate that a day is a work day
-     */
-    private void validateDayIsWorkDay(DayOfWeek day) {
-        if (!configurationService.isWorkDay(day)) {
-            throw new IllegalArgumentException(
-                    "El día " + day.getDisplayName() + " no es un día laboral del restaurante"
-            );
-        }
+        
+        log.debug("Business hours validation passed");
     }
 }

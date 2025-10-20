@@ -304,18 +304,22 @@ public class ShiftServiceImpl implements ShiftService {
         }
 
         SystemConfiguration config = configurationService.getConfiguration();
-        Set<DayOfWeek> workDays = config.getWorkDays();
+        
+        // Get work days from business hours (days where is_closed = false)
+        List<DayOfWeek> workDays = config.getSortedWorkDays();
 
         if (workDays == null || workDays.isEmpty()) {
             throw new IllegalStateException(
-                    "No hay días laborales configurados en el sistema. Configure los días laborales primero."
+                    "No hay días laborales configurados en el sistema. Configure los horarios de negocio primero."
             );
         }
 
+        // Validate each shift day is a work day
         for (DayOfWeek day : shiftDays) {
-            if (!workDays.contains(day)) {
+            if (!config.isWorkDay(day)) {
                 throw new IllegalArgumentException(
-                        "El día " + day.getDisplayName() + " no es un día laboral del restaurante"
+                        "El día " + day.getDisplayName() + " no es un día laboral del restaurante. " +
+                        "El restaurante está cerrado este día."
                 );
             }
         }

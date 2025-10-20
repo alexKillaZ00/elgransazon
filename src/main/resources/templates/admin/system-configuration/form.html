@@ -546,35 +546,8 @@
                   </p>
                 </div>
 
-                <!-- Work Days -->
-                <div>
-                  <label
-                    class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3"
-                  >
-                    Días Laborales *
-                  </label>
-                  <div class="flex flex-wrap gap-3">
-                    <label
-                      th:each="day : ${allDays}"
-                      class="flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-primary cursor-pointer transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        th:id="'day_' + ${day}"
-                        name="workDays"
-                        th:value="${day}"
-                        th:checked="${configuration.workDays.contains(day)}"
-                        class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
-                      />
-                      <span
-                        class="text-sm font-medium text-gray-700 dark:text-gray-300"
-                        th:text="${day.displayName}"
-                      ></span>
-                    </label>
-                  </div>
-                </div>
-
                 <!-- Payment Methods -->
+                <!-- Note: Work days are now managed through Business Hours section (open/closed status) -->
                 <div>
                   <label
                     class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3"
@@ -712,8 +685,10 @@
                     <tbody
                       class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-800"
                     >
+                      <!-- Show ALL days of the week, not just work days -->
+                      <!-- Work days are determined by is_closed = false -->
                       <tr
-                        th:each="day : ${configuration.sortedWorkDays}"
+                        th:each="day : ${allDays}"
                         class="hover:bg-gray-50 dark:hover:bg-gray-800 transition"
                       >
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -726,8 +701,8 @@
                           <input
                             type="time"
                             th:name="'openTime_' + ${day}"
-                            th:value="${businessHoursMap.get(day)?.openTime}"
-                            th:required="${businessHoursMap.get(day) != null && !businessHoursMap.get(day).isClosed}"
+                            th:value="${businessHoursMap?.get(day)?.openTime}"
+                            th:required="${businessHoursMap?.get(day) != null && !businessHoursMap.get(day).isClosed}"
                             class="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
                           />
                         </td>
@@ -735,8 +710,8 @@
                           <input
                             type="time"
                             th:name="'closeTime_' + ${day}"
-                            th:value="${businessHoursMap.get(day)?.closeTime}"
-                            th:required="${businessHoursMap.get(day) != null && !businessHoursMap.get(day).isClosed}"
+                            th:value="${businessHoursMap?.get(day)?.closeTime}"
+                            th:required="${businessHoursMap?.get(day) != null && !businessHoursMap.get(day).isClosed}"
                             class="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
                           />
                         </td>
@@ -747,7 +722,7 @@
                             <input
                               type="checkbox"
                               th:name="'isClosed_' + ${day}"
-                              th:checked="${businessHoursMap.get(day)?.isClosed}"
+                              th:checked="${businessHoursMap?.get(day)?.isClosed}"
                               class="sr-only peer"
                             />
                             <div

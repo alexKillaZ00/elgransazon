@@ -1,5 +1,6 @@
 package com.aatechsolutions.elgransazon.application.service;
 
+import com.aatechsolutions.elgransazon.domain.entity.BusinessHours;
 import com.aatechsolutions.elgransazon.domain.entity.DayOfWeek;
 import com.aatechsolutions.elgransazon.domain.entity.PaymentMethodType;
 import com.aatechsolutions.elgransazon.domain.entity.SystemConfiguration;
@@ -44,9 +45,12 @@ public class SystemConfigurationServiceImpl implements SystemConfigurationServic
     @Override
     public SystemConfiguration updateConfiguration(SystemConfiguration configuration) {
         log.info("Updating system configuration");
+        log.debug("Input averageConsumptionTimeMinutes: {}", configuration.getAverageConsumptionTimeMinutes());
         
         SystemConfiguration existingConfig = configurationRepository.findFirstConfiguration()
                 .orElseThrow(() -> new IllegalStateException("System configuration not found"));
+        
+        log.debug("Existing averageConsumptionTimeMinutes before update: {}", existingConfig.getAverageConsumptionTimeMinutes());
         
         // Update fields
         existingConfig.setRestaurantName(configuration.getRestaurantName());
@@ -56,10 +60,9 @@ public class SystemConfigurationServiceImpl implements SystemConfigurationServic
         existingConfig.setPhone(configuration.getPhone());
         existingConfig.setEmail(configuration.getEmail());
         existingConfig.setTaxRate(configuration.getTaxRate());
+        existingConfig.setAverageConsumptionTimeMinutes(configuration.getAverageConsumptionTimeMinutes());
         
-        if (configuration.getWorkDays() != null) {
-            existingConfig.setWorkDays(configuration.getWorkDays());
-        }
+        log.debug("Existing averageConsumptionTimeMinutes after update: {}", existingConfig.getAverageConsumptionTimeMinutes());
         
         if (configuration.getPaymentMethods() != null) {
             existingConfig.setPaymentMethods(configuration.getPaymentMethods());
@@ -96,23 +99,6 @@ public class SystemConfigurationServiceImpl implements SystemConfigurationServic
     @Transactional(readOnly = true)
     public boolean configurationExists() {
         return configurationRepository.existsConfiguration();
-    }
-
-    @Override
-    public SystemConfiguration updateWorkDays(Set<DayOfWeek> workDays) {
-        log.info("Updating work days");
-        
-        if (workDays == null || workDays.isEmpty()) {
-            throw new IllegalArgumentException("Work days cannot be empty");
-        }
-        
-        SystemConfiguration config = configurationRepository.findFirstConfiguration()
-                .orElseThrow(() -> new IllegalStateException("System configuration not found"));
-        config.setWorkDays(workDays);
-        
-        SystemConfiguration saved = configurationRepository.save(config);
-        log.info("Work days updated successfully");
-        return saved;
     }
 
     @Override
@@ -187,6 +173,7 @@ public class SystemConfigurationServiceImpl implements SystemConfigurationServic
     private SystemConfiguration createDefaultConfiguration() {
         log.info("Creating default system configuration");
         
+        // Define default work days (Monday to Saturday)
         Set<DayOfWeek> defaultWorkDays = new HashSet<>(Arrays.asList(
                 DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
                 DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY
@@ -204,10 +191,34 @@ public class SystemConfigurationServiceImpl implements SystemConfigurationServic
                 .phone("0000-0000")
                 .email("contacto@restaurant.com")
                 .taxRate(new BigDecimal("16.00"))
-                .workDays(defaultWorkDays)
+                .averageConsumptionTimeMinutes(120) // 2 hours default
                 .paymentMethods(defaultPaymentMethods)
                 .build();
         
-        return configurationRepository.save(defaultConfig);
+        // Save configuration first to get the ID
+        SystemConfiguration saved = configurationRepository.save(defaultConfig);
+        log.info("Default system configuration created with ID: {}", saved.getId());
+        
+        // Create default business hours for all days
+        log.info("Creating default business hours for all days");
+        for (DayOfWeek day : DayOfWeek.values()) {
+            boolean isWorkDay = defaultWorkDays.contains(day);
+            BusinessHours hours = BusinessHours.builder()
+                    .dayOfWeek(day)
+                    .openTime(java.time.LocalTime.of(8, 0))   // 8:00 AM
+                    .closeTime(java.time.LocalTime.of(22, 0))  // 10:00 PM
+                    .isClosed(!isWorkDay) // Closed if not a work day (Sunday closed)
+                    .systemConfiguration(saved)
+                    .build();
+            saved.addBusinessHours(hours);
+            log.debug("Created business hours for {}: {} - {} (closed: {})", 
+                    day.getDisplayName(), hours.getOpenTime(), hours.getCloseTime(), hours.getIsClosed());
+        }
+        
+        // Save again with business hours
+        saved = configurationRepository.save(saved);
+        log.info("Default business hours created successfully for all 7 days");
+        
+        return saved;
     }
 }

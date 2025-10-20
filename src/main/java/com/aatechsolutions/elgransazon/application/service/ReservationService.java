@@ -417,21 +417,35 @@ public class ReservationService {
         SystemConfiguration config = systemConfigurationService.getConfiguration();
         Integer avgConsumption = config.getAverageConsumptionTimeMinutes();
 
+        log.debug("=== Validating overlapping reservations ===");
+        log.debug("Table ID: {}", tableId);
+        log.debug("Date: {}", date);
+        log.debug("Start time: {}", startTime);
+        log.debug("Avg consumption: {} minutes", avgConsumption);
+
         // Calculate end time
         LocalTime endTime = startTime.plusMinutes(avgConsumption);
+        log.debug("Calculated end time: {}", endTime);
 
         // Convert average consumption to seconds for the native query
         Integer avgConsumptionSeconds = avgConsumption * 60;
+        log.debug("Avg consumption seconds: {}", avgConsumptionSeconds);
 
         Long overlapCount = reservationRepository.countOverlappingReservations(
                 tableId, date, startTime, endTime, avgConsumptionSeconds, excludeId);
 
+        log.debug("Overlap count: {}", overlapCount);
+
         if (overlapCount > 0) {
+            log.warn("Overlap detected! Count: {}, Config time: {} min ({})", 
+                overlapCount, avgConsumption, config.getAverageConsumptionTimeDisplay());
             throw new IllegalArgumentException(
                     "Ya existe una reservación para esta mesa en el horario solicitado. " +
                     "Debe haber al menos " + config.getAverageConsumptionTimeDisplay() + 
                     " entre reservaciones.");
         }
+        
+        log.debug("=== Validation passed - No overlaps detected ===");
     }
 
     /**

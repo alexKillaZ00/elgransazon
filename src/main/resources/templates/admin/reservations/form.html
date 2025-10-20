@@ -330,8 +330,12 @@
       // Date validation - minimum today
       const dateInput = document.getElementById('reservationDate');
       if (dateInput) {
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.setAttribute('min', today);
+        // Use local date (not UTC) to avoid shifting to tomorrow at night
+        const now = new Date();
+        const tzOffsetMinutes = now.getTimezoneOffset();
+        const local = new Date(now.getTime() - tzOffsetMinutes * 60000);
+        const localISODate = local.toISOString().split('T')[0];
+        dateInput.setAttribute('min', localISODate);
       }
 
       // Character counter for special requests
