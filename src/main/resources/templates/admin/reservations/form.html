@@ -459,65 +459,12 @@
       const timeInput = document.getElementById("reservationTime");
 
       if (dateInput) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const day = String(today.getDate()).padStart(2, "0");
-        const localToday = `${year}-${month}-${day}`;
-        dateInput.setAttribute("min", localToday);
-      }
-
-      // Validate that time is not in the past when date is today
-      function validateDateTime() {
-        if (!dateInput || !timeInput) return true;
-
-        const selectedDate = dateInput.value;
-        const selectedTime = timeInput.value;
-
-        if (!selectedDate || !selectedTime) return true;
-
+        // Use local date (not UTC) to avoid shifting to tomorrow at night
         const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, "0");
-        const day = String(now.getDate()).padStart(2, "0");
-        const todayStr = `${year}-${month}-${day}`;
-
-        if (selectedDate === todayStr) {
-          const currentHour = now.getHours();
-          const currentMinute = now.getMinutes();
-          const currentTimeStr = `${String(currentHour).padStart(
-            2,
-            "0"
-          )}:${String(currentMinute).padStart(2, "0")}`;
-
-          if (selectedTime <= currentTimeStr) {
-            Swal.fire({
-              icon: "error",
-              title: "Hora inválida",
-              text: "No puedes crear una reservación en el pasado. Por favor selecciona una hora futura.",
-              confirmButtonColor: "#2bc866",
-            });
-            timeInput.value = "";
-            return false;
-          }
-        }
-
-        return true;
-      }
-
-      if (dateInput && timeInput) {
-        dateInput.addEventListener("change", validateDateTime);
-        timeInput.addEventListener("change", validateDateTime);
-
-        const form = document.querySelector("form");
-        if (form) {
-          form.addEventListener("submit", function (e) {
-            if (!validateDateTime()) {
-              e.preventDefault();
-              return false;
-            }
-          });
-        }
+        const tzOffsetMinutes = now.getTimezoneOffset();
+        const local = new Date(now.getTime() - tzOffsetMinutes * 60000);
+        const localISODate = local.toISOString().split("T")[0];
+        dateInput.setAttribute("min", localISODate);
       }
 
       // Character counter for special requests
