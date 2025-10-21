@@ -2,267 +2,274 @@
 <html
   xmlns:th="http://www.thymeleaf.org"
   xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
-  lang="en"
+  lang="es"
 >
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Waiter Dashboard - Restaurant POS</title>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f5f5f5;
-      }
-
-      .navbar {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-        padding: 15px 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-
-      .navbar-brand {
-        font-size: 24px;
-        font-weight: 600;
-      }
-
-      .navbar-user {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
-
-      .user-info {
-        font-size: 14px;
-      }
-
-      .role-badge {
-        background-color: rgba(255, 255, 255, 0.3);
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-
-      .btn-logout {
-        background-color: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        padding: 8px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-block;
-      }
-
-      .btn-logout:hover {
-        background-color: rgba(255, 255, 255, 0.3);
-      }
-
-      .container {
-        max-width: 1400px;
-        margin: 40px auto;
-        padding: 0 20px;
-      }
-
-      .welcome-card {
-        background: white;
-        border-radius: 15px;
-        padding: 40px;
-        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        margin-bottom: 40px;
-      }
-
-      .welcome-card h1 {
-        color: #333;
-        margin-bottom: 10px;
-        font-size: 32px;
-      }
-
-      .welcome-card p {
-        color: #666;
-        font-size: 16px;
-      }
-
-      .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 25px;
-      }
-
-      .dashboard-card {
-        background: white;
-        border-radius: 15px;
-        padding: 30px;
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        cursor: pointer;
-      }
-
-      .dashboard-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
-      }
-
-      .card-icon {
-        font-size: 48px;
-        margin-bottom: 15px;
-      }
-
-      .card-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 10px;
-      }
-
-      .card-description {
-        font-size: 14px;
-        color: #666;
-        line-height: 1.5;
-      }
-
-      .card-new-order {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-      }
-
-      .card-new-order .card-title,
-      .card-new-order .card-description {
-        color: white;
-      }
-
-      .card-tables {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-      }
-
-      .card-tables .card-title,
-      .card-tables .card-description {
-        color: white;
-      }
-
-      .card-active {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-      }
-
-      .card-active .card-title,
-      .card-active .card-description {
-        color: white;
-      }
-
-      .card-menu {
-        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        color: white;
-      }
-
-      .card-menu .card-title,
-      .card-menu .card-description {
-        color: white;
-      }
-
-      .card-tips {
-        background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
-        color: white;
-      }
-
-      .card-tips .card-title,
-      .card-tips .card-description {
-        color: white;
-      }
-    </style>
+    <title>Panel de Mesero - El Gran Sazón</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@300;400;500;600;700"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#38e07b",
+              "primary-dark": "#2bc866",
+              "background-light": "#f8faf9",
+            },
+            fontFamily: {
+              display: ["Work Sans", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
   </head>
-  <body>
+  <body class="bg-gradient-to-br from-background-light to-gray-50 font-display">
     <!-- Navigation Bar -->
-    <nav class="navbar">
-      <div class="navbar-brand">🍽️ Restaurant POS - Waiter Panel</div>
-      <div class="navbar-user">
-        <span class="role-badge" th:text="${role}">Waiter</span>
-        <span class="user-info">
-          <strong th:text="${username}">User</strong>
-        </span>
-        <form th:action="@{/logout}" method="post" style="display: inline">
-          <button type="submit" class="btn-logout">Logout</button>
-        </form>
+    <nav class="bg-white border-b border-gray-200 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <!-- Brand -->
+          <div class="flex items-center gap-3">
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center shadow-lg shadow-primary/30"
+            >
+              <span class="material-symbols-outlined text-white text-xl"
+                >restaurant</span
+              >
+            </div>
+            <div>
+              <h1 class="text-lg font-bold text-gray-900">El Gran Sazón</h1>
+              <p class="text-xs text-primary font-semibold">Panel de Mesero</p>
+            </div>
+          </div>
+
+          <!-- User Info -->
+          <div class="flex items-center gap-4">
+            <span
+              class="hidden sm:inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full"
+              th:text="${role}"
+            >
+              Mesero
+            </span>
+            <span
+              class="hidden md:inline-block text-sm font-medium text-gray-700"
+            >
+              <strong th:text="${username}">Usuario</strong>
+            </span>
+            <form th:action="@{/logout}" method="post" class="inline">
+              <button
+                type="submit"
+                class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition-colors"
+              >
+                <span class="material-symbols-outlined text-lg">logout</span>
+                <span class="hidden sm:inline">Cerrar Sesión</span>
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
     </nav>
 
     <!-- Main Content -->
-    <div class="container">
-      <div class="welcome-card">
-        <h1>👨‍🍳 Panel de Mesero</h1>
-        <p>Gestiona pedidos, mesas y brinda un excelente servicio al cliente</p>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Welcome Card -->
+      <div
+        class="bg-gradient-to-r from-primary to-primary-dark rounded-2xl p-8 mb-8 text-white shadow-xl shadow-primary/20"
+      >
+        <div class="flex items-center gap-4 mb-4">
+          <div
+            class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center"
+          >
+            <span class="material-symbols-outlined text-4xl"
+              >restaurant_menu</span
+            >
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold mb-1">Panel de Mesero</h1>
+            <p class="text-white/90 text-sm">
+              Gestiona pedidos, mesas y brinda un excelente servicio al cliente
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div class="dashboard-grid">
+      <!-- Dashboard Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Menú -->
-        <div class="dashboard-card card-menu">
-          <div class="card-icon">📖</div>
-          <div class="card-title">Menú</div>
-          <div class="card-description">
+        <a
+          href="#"
+          class="group bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+        >
+          <div
+            class="w-14 h-14 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          >
+            <span class="material-symbols-outlined text-3xl text-primary"
+              >menu_book</span
+            >
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">Menú</h3>
+          <p class="text-gray-600 text-sm">
             Consulta el menú completo, platillos disponibles y especiales del
             día
-          </div>
-        </div>
+          </p>
+        </a>
 
         <!-- Gestión de Mesas -->
-        <div class="dashboard-card card-tables">
-          <div class="card-icon">🪑</div>
-          <div class="card-title">Gestión de Mesas</div>
-          <div class="card-description">
-            Administra tus mesas asignadas, estados y disponibilidad
+        <a
+          href="#"
+          class="group bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+        >
+          <div
+            class="w-14 h-14 bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          >
+            <span class="material-symbols-outlined text-3xl text-blue-600"
+              >table_restaurant</span
+            >
           </div>
-        </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">Gestión de Mesas</h3>
+          <p class="text-gray-600 text-sm">
+            Administra tus mesas asignadas, estados y disponibilidad
+          </p>
+        </a>
 
         <!-- Gestión de Pedidos -->
-        <div class="dashboard-card card-new-order">
-          <div class="card-icon">�</div>
-          <div class="card-title">Gestión de Pedidos</div>
-          <div class="card-description">
-            Crea nuevos pedidos, modifica órdenes activas y gestiona solicitudes
+        <a
+          href="#"
+          class="group bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+        >
+          <div
+            class="w-14 h-14 bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          >
+            <span class="material-symbols-outlined text-3xl text-orange-600"
+              >receipt_long</span
+            >
           </div>
-        </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">
+            Gestión de Pedidos
+          </h3>
+          <p class="text-gray-600 text-sm">
+            Crea nuevos pedidos, modifica órdenes activas y gestiona solicitudes
+          </p>
+        </a>
 
         <!-- Estado de Cocina -->
-        <div class="dashboard-card card-active">
-          <div class="card-icon">�‍🍳</div>
-          <div class="card-title">Estado de Cocina</div>
-          <div class="card-description">
-            Monitorea el progreso de los pedidos en cocina en tiempo real
+        <a
+          href="#"
+          class="group bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+        >
+          <div
+            class="w-14 h-14 bg-gradient-to-br from-red-500/10 to-red-500/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          >
+            <span class="material-symbols-outlined text-3xl text-red-600"
+              >soup_kitchen</span
+            >
           </div>
-        </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">Estado de Cocina</h3>
+          <p class="text-gray-600 text-sm">
+            Monitorea el progreso de los pedidos en cocina en tiempo real
+          </p>
+        </a>
 
         <!-- Mi Perfil -->
-        <div class="dashboard-card">
-          <div class="card-icon">�</div>
-          <div class="card-title">Mi Perfil</div>
-          <div class="card-description">
+        <a
+          href="#"
+          class="group bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+        >
+          <div
+            class="w-14 h-14 bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          >
+            <span class="material-symbols-outlined text-3xl text-purple-600"
+              >person</span
+            >
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">Mi Perfil</h3>
+          <p class="text-gray-600 text-sm">
             Actualiza tu información personal, contraseña y preferencias
+          </p>
+        </a>
+
+        <!-- Propinas -->
+        <a
+          href="#"
+          class="group bg-white rounded-2xl p-6 border border-gray-200 shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300 hover:-translate-y-1"
+        >
+          <div
+            class="w-14 h-14 bg-gradient-to-br from-amber-500/10 to-amber-500/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          >
+            <span class="material-symbols-outlined text-3xl text-amber-600"
+              >payments</span
+            >
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 mb-2">Propinas</h3>
+          <p class="text-gray-600 text-sm">
+            Registra y consulta tus propinas del día y estadísticas
+          </p>
+        </a>
+      </div>
+
+      <!-- Quick Stats (Optional) -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm mb-1">Mesas Activas</p>
+              <p class="text-3xl font-bold text-gray-900">5</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined text-2xl text-primary"
+                >table_restaurant</span
+              >
+            </div>
           </div>
         </div>
 
-        <!-- Propinas -->
-        <div class="dashboard-card card-tips">
-          <div class="card-icon">�</div>
-          <div class="card-title">Propinas</div>
-          <div class="card-description">
-            Registra y consulta tus propinas del día y estadísticas
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm mb-1">Pedidos en Proceso</p>
+              <p class="text-3xl font-bold text-gray-900">8</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined text-2xl text-orange-600"
+                >pending_actions</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm mb-1">Propinas Hoy</p>
+              <p class="text-3xl font-bold text-gray-900">$250</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center"
+            >
+              <span class="material-symbols-outlined text-2xl text-amber-600"
+                >monetization_on</span
+              >
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   </body>
 </html>

@@ -194,32 +194,6 @@
             ></p>
           </div>
 
-          <!-- SEARCH & FILTERS -->
-          <div class="flex flex-col md:flex-row gap-4 mb-6">
-            <div class="relative w-full md:w-80">
-              <span
-                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                >search</span
-              >
-              <input
-                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
-                placeholder="Buscar por nombre del cliente..."
-                type="text"
-              />
-            </div>
-            <div class="relative w-full md:w-auto">
-              <input
-                class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
-                type="date"
-                th:value="${selectedDate}"
-              />
-              <span
-                class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                >calendar_today</span
-              >
-            </div>
-          </div>
-
           <!-- TABS -->
           <div class="mb-6">
             <div class="border-b border-gray-200 dark:border-gray-700"></div>
@@ -536,6 +510,7 @@
 
           <!-- Filters -->
           <div
+            id="filtersSection"
             class="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-800 mb-6"
           >
             <h3
@@ -544,6 +519,7 @@
               Filtros
             </h3>
             <form
+              id="filterForm"
               method="get"
               action="/admin/reservations"
               class="grid grid-cols-1 md:grid-cols-3 gap-4"
@@ -556,6 +532,7 @@
                 </label>
                 <input
                   type="date"
+                  id="dateFilter"
                   name="date"
                   th:value="${selectedDate}"
                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
@@ -568,6 +545,7 @@
                   Estado
                 </label>
                 <select
+                  id="statusFilter"
                   name="status"
                   class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
@@ -587,18 +565,19 @@
                 >
                   Filtrar
                 </button>
-                <a
-                  href="/admin/reservations"
+                <button
+                  type="button"
+                  id="clearFiltersBtn"
                   class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   Limpiar
-                </a>
+                </button>
               </div>
             </form>
           </div>
 
           <!-- Reservations Table -->
-          <div>
+          <div id="reservationsTableSection">
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">
               Todas las Reservaciones
             </h3>
@@ -618,7 +597,10 @@
                     <th class="px-6 py-4" scope="col">Acciones</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                <tbody
+                  class="divide-y divide-gray-200 dark:divide-gray-800"
+                  id="reservationsTableBody"
+                >
                   <tr
                     th:if="${#lists.isEmpty(reservations)}"
                     class="text-center"
@@ -759,10 +741,10 @@
     <!-- Reservation Details Modal -->
     <div
       id="reservationModal"
-      class="hidden fixed inset-0 bg-gray-900/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+      class="hidden fixed inset-0 bg-gray-900/50 backdrop-blur-sm overflow-y-auto h-full w-full z-[60]"
     >
       <div
-        class="relative top-20 mx-auto p-5 border-0 w-full max-w-2xl shadow-2xl rounded-2xl bg-white dark:bg-gray-900"
+        class="relative top-20 mx-auto p-5 border-0 w-full max-w-2xl shadow-2xl rounded-2xl bg-white dark:bg-gray-900 mb-20"
       >
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -785,14 +767,16 @@
     <!-- Calendar Day Reservations Modal -->
     <div
       id="calendarModal"
-      class="hidden fixed inset-0 bg-gray-900/50 backdrop-blur-sm overflow-y-auto h-full w-full z-50"
+      class="hidden fixed inset-0 bg-gray-900/50 backdrop-blur-sm h-full w-full z-50 flex items-center justify-center p-4"
       onclick="closeCalendarModal(event)"
     >
       <div
-        class="relative top-20 mx-auto p-6 border-0 w-full max-w-3xl shadow-2xl rounded-2xl bg-white dark:bg-gray-900"
+        class="relative w-full max-w-3xl max-h-[90vh] shadow-2xl rounded-2xl bg-white dark:bg-gray-900 flex flex-col"
         onclick="event.stopPropagation()"
       >
-        <div class="flex items-center justify-between mb-6">
+        <div
+          class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0"
+        >
           <div class="flex items-center gap-3">
             <div
               class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center"
@@ -819,7 +803,10 @@
           </button>
         </div>
 
-        <div id="modalReservationsList" class="space-y-3">
+        <div
+          id="modalReservationsList"
+          class="space-y-3 p-6 overflow-y-auto flex-1"
+        >
           <!-- Reservations will be loaded here -->
         </div>
       </div>
@@ -829,6 +816,103 @@
     <div th:replace="~{fragments/sidebar :: sidebarScripts}"></div>
 
     <script>
+      // ==================== FILTER FUNCTIONALITY ====================
+      document.addEventListener("DOMContentLoaded", () => {
+        const filterForm = document.getElementById("filterForm");
+        const clearFiltersBtn = document.getElementById("clearFiltersBtn");
+        const dateFilter = document.getElementById("dateFilter");
+        const statusFilter = document.getElementById("statusFilter");
+
+        // Handle form submission with AJAX
+        if (filterForm) {
+          filterForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            // Save current scroll position
+            const scrollPosition = window.scrollY;
+
+            const dateValue = dateFilter.value;
+            const statusValue = statusFilter.value;
+
+            // Build query parameters
+            const params = new URLSearchParams();
+            if (dateValue) params.append("date", dateValue);
+            if (statusValue) params.append("status", statusValue);
+
+            try {
+              // Show loading state
+              const tableBody = document.getElementById(
+                "reservationsTableBody"
+              );
+              if (tableBody) {
+                tableBody.innerHTML = `
+                  <tr class="text-center">
+                    <td colspan="6" class="px-6 py-12">
+                      <div class="flex flex-col items-center justify-center gap-3">
+                        <div class="animate-spin inline-block w-12 h-12 border-4 border-primary border-t-transparent rounded-full"></div>
+                        <p class="text-gray-500 dark:text-gray-400">Cargando reservaciones...</p>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }
+
+              // Fetch filtered data
+              const response = await fetch(
+                `/admin/reservations?${params.toString()}`
+              );
+              const html = await response.text();
+
+              // Parse the HTML response
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, "text/html");
+
+              // Update the table body
+              const newTableBody = doc.getElementById("reservationsTableBody");
+              if (tableBody && newTableBody) {
+                tableBody.innerHTML = newTableBody.innerHTML;
+              }
+
+              // Restore scroll position
+              window.scrollTo(0, scrollPosition);
+
+              // Update URL without reloading
+              const newUrl = params.toString()
+                ? `/admin/reservations?${params.toString()}`
+                : `/admin/reservations`;
+              window.history.pushState({}, "", newUrl);
+            } catch (error) {
+              console.error("Error filtering reservations:", error);
+              Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: "Error al filtrar las reservaciones",
+                confirmButtonColor: "#38e07b",
+              });
+            }
+          });
+        }
+
+        // Handle clear filters
+        if (clearFiltersBtn) {
+          clearFiltersBtn.addEventListener("click", () => {
+            // Save current scroll position
+            const scrollPosition = window.scrollY;
+
+            dateFilter.value = "";
+            statusFilter.value = "";
+
+            // Trigger form submission to reload all data
+            filterForm.dispatchEvent(new Event("submit"));
+
+            // Restore scroll position after a short delay
+            setTimeout(() => {
+              window.scrollTo(0, scrollPosition);
+            }, 100);
+          });
+        }
+      });
+
       // View reservation details
       async function viewReservationDetails(id) {
         try {
