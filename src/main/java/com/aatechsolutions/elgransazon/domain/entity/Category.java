@@ -7,6 +7,8 @@ import lombok.*;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Category entity representing menu item categories
@@ -20,7 +22,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(of = {"idCategory"})
-@ToString
+@ToString(exclude = {"menuItems"})
 public class Category implements Serializable {
 
     @Id
@@ -54,6 +56,16 @@ public class Category implements Serializable {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // ========== Relationships ==========
+
+    /**
+     * One-to-Many relationship with ItemMenu
+     * A category can have multiple menu items
+     */
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = false, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<ItemMenu> menuItems = new ArrayList<>();
+
     /**
      * Lifecycle callback to set updatedAt before update operations
      */
@@ -70,5 +82,23 @@ public class Category implements Serializable {
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
         }
+    }
+
+    // ========== Business Logic Methods ==========
+
+    /**
+     * Add a menu item to this category
+     */
+    public void addMenuItem(ItemMenu item) {
+        this.menuItems.add(item);
+        item.setCategory(this);
+    }
+
+    /**
+     * Remove a menu item from this category
+     */
+    public void removeMenuItem(ItemMenu item) {
+        this.menuItems.remove(item);
+        item.setCategory(null);
     }
 }

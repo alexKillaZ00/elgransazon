@@ -74,7 +74,9 @@ public class CategoryController {
                 return "admin/categories/form";
             }
 
+            // Create category
             categoryService.createCategory(category);
+            
             log.info("Category created successfully: {}", category.getName());
             redirectAttributes.addFlashAttribute("successMessage", "Category created successfully!");
             return "redirect:/admin/categories";
@@ -128,7 +130,9 @@ public class CategoryController {
         }
 
         try {
+            // Update category
             categoryService.updateCategory(id, category);
+            
             log.info("Category updated successfully: {}", id);
             redirectAttributes.addFlashAttribute("successMessage", "Category updated successfully!");
             return "redirect:/admin/categories";
