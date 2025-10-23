@@ -257,12 +257,141 @@
             </div>
           </div>
 
+          <!-- FILTROS -->
+          <div
+            class="mb-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-6 shadow-lg"
+          >
+            <h2
+              class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2"
+            >
+              <span class="material-symbols-outlined text-primary">filter_list</span>
+              Filtros de Búsqueda
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <!-- Nombre del Item -->
+              <div>
+                <label
+                  for="nameFilter"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  <span class="material-symbols-outlined text-sm align-middle">search</span>
+                  Nombre del Item
+                </label>
+                <input
+                  type="text"
+                  id="nameFilter"
+                  placeholder="Buscar por nombre..."
+                  class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                />
+              </div>
+
+              <!-- Categoría -->
+              <div>
+                <label
+                  for="categoryFilter"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  <span class="material-symbols-outlined text-sm align-middle">category</span>
+                  Categoría
+                </label>
+                <select
+                  id="categoryFilter"
+                  class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                >
+                  <option value="">Todas las categorías</option>
+                  <option th:each="category : ${categories}" 
+                          th:value="${category.idCategory}" 
+                          th:text="${category.name}"></option>
+                </select>
+              </div>
+
+              <!-- Rango de Precios -->
+              <div>
+                <label
+                  for="priceFilter"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  <span class="material-symbols-outlined text-sm align-middle">payments</span>
+                  Rango de Precio
+                </label>
+                <select
+                  id="priceFilter"
+                  class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                >
+                  <option value="">Todos los precios</option>
+                  <option value="0-50">$0 - $50</option>
+                  <option value="50-100">$50 - $100</option>
+                  <option value="100-200">$100 - $200</option>
+                  <option value="200-500">$200 - $500</option>
+                  <option value="500+">$500+</option>
+                </select>
+              </div>
+
+              <!-- Disponibilidad -->
+              <div>
+                <label
+                  for="availabilityFilter"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  <span class="material-symbols-outlined text-sm align-middle">inventory</span>
+                  Disponibilidad
+                </label>
+                <select
+                  id="availabilityFilter"
+                  class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                >
+                  <option value="">Todos</option>
+                  <option value="true">Disponibles</option>
+                  <option value="false">Sin Stock</option>
+                </select>
+              </div>
+
+              <!-- Estado Activo/Inactivo -->
+              <div>
+                <label
+                  for="statusFilter"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                >
+                  <span class="material-symbols-outlined text-sm align-middle">toggle_on</span>
+                  Estado
+                </label>
+                <select
+                  id="statusFilter"
+                  class="w-full px-4 py-2 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                >
+                  <option value="">Todos</option>
+                  <option value="true">Activos</option>
+                  <option value="false">Inactivos</option>
+                </select>
+              </div>
+            </div>
+            
+            <div
+              class="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
+            >
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Mostrando 
+                <span id="filteredCount" class="font-semibold text-primary" th:text="${#lists.size(menuItems)}">0</span> 
+                de 
+                <span th:text="${#lists.size(menuItems)}">0</span> 
+                items
+              </p>
+              <button
+                id="clearFilters"
+                class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all font-medium"
+              >
+                <span class="material-symbols-outlined text-lg">clear_all</span>
+                Limpiar Filtros
+              </button>
+            </div>
+          </div>
+
           <!-- MENU ITEMS TABLE -->
           <div
             class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-lg overflow-hidden"
           >
             <div class="overflow-x-auto">
-              <table class="w-full">
+              <table class="w-full" id="menuItemsTable">
                 <thead
                   class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700"
                 >
@@ -309,7 +438,7 @@
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700" id="menuItemsTableBody">
                   <tr th:if="${#lists.isEmpty(menuItems)}">
                     <td colspan="8" class="px-6 py-12 text-center">
                       <div
@@ -337,7 +466,12 @@
 
                   <tr
                     th:each="item : ${menuItems}"
-                    class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    class="item-row hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    th:data-name="${#strings.toLowerCase(item.name)}"
+                    th:data-category="${item.category.idCategory}"
+                    th:data-price="${item.price}"
+                    th:data-available="${item.available}"
+                    th:data-active="${item.active}"
                   >
                     <!-- Imagen -->
                     <td class="px-6 py-4">
@@ -533,6 +667,18 @@
                 </tbody>
               </table>
             </div>
+            
+            <!-- No Results Message -->
+            <div
+              id="noResults"
+              class="hidden p-6 text-center text-gray-600 dark:text-gray-400"
+            >
+              <div class="flex flex-col items-center gap-3">
+                <span class="material-symbols-outlined text-6xl text-gray-400">search_off</span>
+                <p class="text-lg font-semibold">No se encontraron items con los filtros aplicados</p>
+                <p class="text-sm">Intenta ajustar los filtros o limpiarlos</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
@@ -540,15 +686,14 @@
 
     <!-- JAVASCRIPT -->
     <script>
-      // Auto-hide alerts after 5 seconds
+      // Combined DOMContentLoaded
       document.addEventListener("DOMContentLoaded", function () {
+        // Auto-hide alerts after 5 seconds
         const alerts = document.querySelectorAll(".bg-green-100, .bg-red-100");
-
         alerts.forEach((alert) => {
           if (alert && alert.classList.contains("mb-6")) {
             setTimeout(() => {
-              alert.style.transition =
-                "opacity 0.5s ease-out, transform 0.5s ease-out";
+              alert.style.transition = "opacity 0.5s ease-out, transform 0.5s ease-out";
               alert.style.opacity = "0";
               alert.style.transform = "translateY(-20px)";
               setTimeout(() => {
@@ -557,10 +702,117 @@
             }, 2000);
           }
         });
-      });
 
-      <!-- Sidebar Scripts Fragment -->
-      <div th:replace="~{fragments/sidebar :: sidebarScripts}"></div>;
+        // Filter functionality
+        const nameFilter = document.getElementById("nameFilter");
+        const categoryFilter = document.getElementById("categoryFilter");
+        const priceFilter = document.getElementById("priceFilter");
+        const availabilityFilter = document.getElementById("availabilityFilter");
+        const statusFilter = document.getElementById("statusFilter");
+        const clearFiltersBtn = document.getElementById("clearFilters");
+        const filteredCount = document.getElementById("filteredCount");
+        const noResults = document.getElementById("noResults");
+        const table = document.getElementById("menuItemsTable");
+
+        // Check if filters exist
+        if (!nameFilter || !categoryFilter || !priceFilter || !availabilityFilter || !statusFilter) {
+          console.error("One or more filter elements not found");
+          return;
+        }
+
+        function applyFilters() {
+          const nameValue = nameFilter.value.toLowerCase().trim();
+          const categoryValue = categoryFilter.value;
+          const priceValue = priceFilter.value;
+          const availabilityValue = availabilityFilter.value;
+          const statusValue = statusFilter.value;
+
+          const rows = document.querySelectorAll(".item-row");
+          let visibleCount = 0;
+
+          rows.forEach((row) => {
+            const name = row.getAttribute("data-name") || "";
+            const category = row.getAttribute("data-category") || "";
+            const price = parseFloat(row.getAttribute("data-price")) || 0;
+            const available = row.getAttribute("data-available") || "";
+            const active = row.getAttribute("data-active") || "";
+
+            let show = true;
+
+            // Filter by name
+            if (nameValue && !name.includes(nameValue)) {
+              show = false;
+            }
+
+            // Filter by category
+            if (categoryValue && category !== categoryValue) {
+              show = false;
+            }
+
+            // Filter by price range
+            if (priceValue) {
+              if (priceValue === "0-50" && (price < 0 || price > 50)) {
+                show = false;
+              } else if (priceValue === "50-100" && (price < 50 || price > 100)) {
+                show = false;
+              } else if (priceValue === "100-200" && (price < 100 || price > 200)) {
+                show = false;
+              } else if (priceValue === "200-500" && (price < 200 || price > 500)) {
+                show = false;
+              } else if (priceValue === "500+" && price < 500) {
+                show = false;
+              }
+            }
+
+            // Filter by availability
+            if (availabilityValue !== "" && available !== availabilityValue) {
+              show = false;
+            }
+
+            // Filter by status
+            if (statusValue !== "" && active !== statusValue) {
+              show = false;
+            }
+
+            if (show) {
+              row.style.display = "";
+              visibleCount++;
+            } else {
+              row.style.display = "none";
+            }
+          });
+
+          filteredCount.textContent = visibleCount;
+
+          if (visibleCount === 0) {
+            noResults.classList.remove("hidden");
+            table.style.display = "none";
+          } else {
+            noResults.classList.add("hidden");
+            table.style.display = "";
+          }
+        }
+
+        // Add event listeners
+        nameFilter.addEventListener("input", applyFilters);
+        categoryFilter.addEventListener("change", applyFilters);
+        priceFilter.addEventListener("change", applyFilters);
+        availabilityFilter.addEventListener("change", applyFilters);
+        statusFilter.addEventListener("change", applyFilters);
+
+        clearFiltersBtn.addEventListener("click", function () {
+          nameFilter.value = "";
+          categoryFilter.value = "";
+          priceFilter.value = "";
+          availabilityFilter.value = "";
+          statusFilter.value = "";
+          applyFilters();
+        });
+      });
+    </script>
+
+    <!-- Sidebar Scripts Fragment -->
+    <div th:replace="~{fragments/sidebar :: sidebarScripts}"></div>
     </script>
   </body>
 </html>

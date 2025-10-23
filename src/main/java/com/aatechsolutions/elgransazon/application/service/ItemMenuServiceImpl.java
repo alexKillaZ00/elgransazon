@@ -39,9 +39,20 @@ public class ItemMenuServiceImpl implements ItemMenuService {
     }
 
     @Override
+    @Transactional
     public List<ItemMenu> findAllOrderByCategoryAndName() {
         log.debug("Fetching all menu items ordered by category and name");
-        return itemMenuRepository.findAllOrderByCategoryAndName();
+        List<ItemMenu> items = itemMenuRepository.findAllOrderByCategoryAndName();
+        
+        // Update availability for all items based on current ingredient stock
+        for (ItemMenu item : items) {
+            item.updateAvailability();
+        }
+        
+        // Save updated availability status
+        itemMenuRepository.saveAll(items);
+        
+        return items;
     }
 
     @Override
